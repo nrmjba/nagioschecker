@@ -121,6 +121,3 @@
 <!ENTITY nch.prefs.disabled "Disabled">
 <!ENTITY nch.prefs.onaddons "On Mozilla Add-ons site">
 <!ENTITY nch.prefs.projecthome "Project's home">
-
-<!ENTITY nch.prefs.moveup "Move up">
-<!ENTITY nch.prefs.movedown "Move down">
