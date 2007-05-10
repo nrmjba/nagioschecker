@@ -1,0 +1,29 @@
+= Nagios demos =
+== Netways ==
+
+*Start page:* [http://nagios-demo.netways.de/]
+
+*Credentials:* guest:guest
+
+
+== dtnet ==
+
+*Start page:* [http://www.dtnet.de/Demo/Nagios/nagios.html]
+
+== diglinks ==
+
+*Start page:* [http://sysnetmon.diglinks.com/]
+
+*Credentials:* guest:guest
+
+== RunNagios ==
+
+*Start page:* [http://www.runnagios.be/]
+
+
+
+
+
+
+
+
