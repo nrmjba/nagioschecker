@@ -527,9 +527,6 @@ NCHParser.prototype = {
                     if (tit.match("otification") && tit.match("have been disabled")) {
                       disnotifs=true;
                     }
-                    if (tit.match("otification") && tit.match("have been disabled")) {
-                      disnotifs=true;
-                    }
                     if (tit.match("scheduled downtime")) {
                       downtime=true;
                     }

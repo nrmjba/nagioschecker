@@ -124,3 +124,7 @@
 
 <!ENTITY nch.prefs.moveup "Move up">
 <!ENTITY nch.prefs.movedown "Move down">
+
+<!ENTITY nch.prefs.advanced "Advanced">
+<!ENTITY nch.prefs.advancedsettings "Advanced Settings">
+<!ENTITY nch.prefs.timeout "Download Timeout (in seconds)">
