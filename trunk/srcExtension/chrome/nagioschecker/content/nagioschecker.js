@@ -1,4 +1,5 @@
-
+var gPopupTimer = null;
+var gHidePopupTimer=null;
 
 var nagioschecker = null;
 var nagioscheckerLoad = function() {
@@ -678,13 +679,45 @@ NCH.prototype = {
   },
 
   hideNchPopup: function(popupId) {
+	var _this=this;
+	 gHidePopupTimer = setTimeout(function() {
 		document.getElementById(popupId).hidePopup();
+			  _this.popened=false;
+	 }, 700);
   },
+  
+  cancelShow: function() {
+    if (gPopupTimer) {
+        clearTimeout(gPopupTimer);
+    }
+    gPopupTimer = 0;
+	},
+cancelHide: function() {
+    if (gHidePopupTimer) {
+        clearTimeout(gHidePopupTimer);
+        gHidePopupTimer = null;
+    }
+},	
+  popened:false,
   showNchPopup: function(miniElem, event, popupId) {	
-	  if(event.button == 0) 
-		  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
+   if (!event.relatedTarget) {
+        // we somehow got to this button from the outside
+        // ignore
+        return;
+    }
+    if (this.popened) return true;
+//	this.cancelShow();
+//	  if(event.button == 0) {
+	  		var _this = this;
+		    gPopupTimer = setTimeout(function() {
+//		    	_this.cancelShow();
+//		    	_this.cancelHide();
+			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
+			  _this.popened=true;
+		    }, 700);
+//	  }
+	  	
   },
-
 
 
 
@@ -857,7 +890,17 @@ NCH.prototype = {
 			  mainPanel.setAttribute("onclick","nagioschecker.statusBarOnClick(event,'main');");
 			  break;
 		  case 3:
-		  	mainPanel.setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
+//		  	mainPanel.setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
+		  	mainPanel.setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
+		  	mainPanel.setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
+		  	mainPanel.setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
+
+        for (var pType in fld) {
+		  	fld[pType].setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
+//		  	fld[pType].setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
+		  	fld[pType].setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
+        }
+
 			  break;
 		  default:
 	  		mainPanel.removeAttribute("onclick");
@@ -912,7 +955,7 @@ NCH.prototype = {
 
     if ((isAny) && (this.infoWindowType>0)) {
       if (this.infoWindowType==1) {
-        mainPanel.setAttribute("tooltip", "nagioschecker-tooltip");
+//        mainPanel.setAttribute("tooltip", "nagioschecker-tooltip");
         for (var pType in fld) {
           fld[pType].removeAttribute("tooltip");
         } 
@@ -920,7 +963,7 @@ NCH.prototype = {
       else {
   		  mainPanel.removeAttribute("tooltip");
         for (var pType in fld) {
-          fld[pType].setAttribute("tooltip", "nagioschecker-tooltip-"+pType);
+//          fld[pType].setAttribute("tooltip", "nagioschecker-tooltip-"+pType);
         }
       }
     }

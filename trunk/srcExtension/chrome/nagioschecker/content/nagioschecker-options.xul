@@ -31,6 +31,7 @@
       <tab label="&nch.prefs.display;"/>
       <tab label="&nch.prefs.behavior;"/>
       <tab label="&nch.prefs.sounds;"/>
+      <tab label="&nch.prefs.advanced;"/>
     </tabs>
     <tabpanels flex="1">
       <tabpanel  orient="vertical">
@@ -254,6 +255,16 @@
             </vbox>
           </groupbox>
       </vbox>
+      </tabpanel>
+
+      <tabpanel orient="vertical">
+	  	  <groupbox flex="1">
+		      <caption class="nch" label="&nch.prefs.advancedsettings;"/>	
+            <vbox>
+			<label value="&nch.prefs.timeout;:" control="nch-advanced-timeout"/>
+			<textbox prefstring="extensions.nagioschecker.timeout" id="nch-advanced-timeout" size="4"/> 
+            </vbox>
+          </groupbox>
       </tabpanel>
 
     </tabpanels>
