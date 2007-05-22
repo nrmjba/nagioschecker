@@ -893,12 +893,12 @@ cancelHide: function() {
 //		  	mainPanel.setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
 		  	mainPanel.setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
 		  	mainPanel.setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
-		  	mainPanel.setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
+//		  	mainPanel.setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
 
         for (var pType in fld) {
-		  	fld[pType].setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
+//		  	fld[pType].setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
 //		  	fld[pType].setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
-		  	fld[pType].setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
+//		  	fld[pType].setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
         }
 
 			  break;
@@ -943,6 +943,7 @@ cancelHide: function() {
   },
 
   resetTooltips: function(isAny) {
+/*
     var fld = {
               "down":document.getElementById('nagioschecker-hosts-down'),
             	"unreachable": document.getElementById('nagioschecker-hosts-unreachable'),
@@ -973,6 +974,7 @@ cancelHide: function() {
         fld[pType].removeAttribute("tooltip");
       }
     }
+*/ 
   },
 
 
