@@ -20,6 +20,29 @@ gMini=false;
   </stringbundleset>
 
 	<statusbar id="status-bar">	
+
+  	<statusbarpanel
+	    minwidth="20px"
+		  crop="start"
+		id="pokuspanel"
+  		  onmouseover="nagioschecker.showNchPopup(this,event,'nagioschecker-popup');"
+  		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
+        >
+		  <label id="pokusinfo" value="X" />
+		  <label id="pokusinfo2" value="Y" />
+		   <label id="pokus1" value="Jedna" class="nagioschecker-down-value"
+		 onmouseover="event.preventDefault();"
+		 onmouseout="event.preventDefault();"
+		   
+		   />
+		   <spacer flex="1"/>
+		  <label id="pokus2" class="nagioschecker-warning-value" value="Dve"
+		  		 onmouseover="return true;"
+		 onmouseout="return true;"
+		  />
+    </statusbarpanel>
+
+
     <popupset>
       <menupopup id="nagioschecker-menu">
   	    <menuseparator id="menu-separe" />  
@@ -41,7 +64,10 @@ gMini=false;
     <popup id="nagioschecker-popup-warning" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"/>
     <popup id="nagioschecker-popup-critical" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"/>
     </popupset>
-
+<!-- 
+		 onmouseover="document.getElementById('pokusinfo').value='nad';"
+		 onmouseout="document.getElementById('pokusinfo').value='pryc';"
+ -->
     <tooltip id="nagioschecker-tooltip" position="before-start" class="nagioschecker-tooltip" noautohide="true"/>
   	<tooltip id="nagioschecker-tooltip-down" position="before-start" class="nagioschecker-tooltip" noautohide="true"/>
   	<tooltip id="nagioschecker-tooltip-unreachable" position="before-start" class="nagioschecker-tooltip" noautohide="true"/>

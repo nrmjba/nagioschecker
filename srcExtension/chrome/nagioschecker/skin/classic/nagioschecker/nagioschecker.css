@@ -18,6 +18,7 @@ caption.nch {
   padding:0;border:0;
 }
 .nagioschecker-panel label{
+font-size:20px;
 }
 
 statusbarpanel .nagioschecker-box {
