@@ -121,10 +121,3 @@
 <!ENTITY nch.prefs.disabled "Disabled">
 <!ENTITY nch.prefs.onaddons "On Mozilla Add-ons site">
 <!ENTITY nch.prefs.projecthome "Project's home">
-
-<!ENTITY nch.prefs.moveup "Move up">
-<!ENTITY nch.prefs.movedown "Move down">
-
-<!ENTITY nch.prefs.advanced "Advanced">
-<!ENTITY nch.prefs.advancedsettings "Advanced Settings">
-<!ENTITY nch.prefs.timeout "Download Timeout (in seconds)">

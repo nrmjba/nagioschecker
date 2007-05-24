@@ -1,5 +1,4 @@
-var gPopupTimer = null;
-var gHidePopupTimer=null;
+
 
 var nagioschecker = null;
 var nagioscheckerLoad = function() {
@@ -678,69 +677,14 @@ NCH.prototype = {
     this.resetTooltips(true);
   },
 
-  hideNchPopup: function(popupId,event) {
-// event.stopPropagation();
-				document.getElementById('pokusinfo').value=event.target.id;
-/*
-	 gHidePopupTimer = setTimeout(function() {
-				document.getElementById('pokusinfo2').value='zaviram';
+  hideNchPopup: function(popupId) {
 		document.getElementById(popupId).hidePopup();
-			  _this.popened=false;
-	 }, 100);
-*/ 
-
-	if (event.target.id=="pokuspanel") {
-	var _this=this;
-	 gHidePopupTimer = setTimeout(function() {
-				document.getElementById('pokusinfo2').value='zaviram';
-		document.getElementById(popupId).hidePopup();
-			  _this.popened=false;
-	 }, 100);
-	}
-
-//		document.getElementById(popupId).hidePopup();
-//			  this.popened=false;
- return true;
-   },
-  
-  cancelShow: function() {
-    if (gPopupTimer) {
-        clearTimeout(gPopupTimer);
-    }
-    gPopupTimer = 0;
-	},
-cancelHide: function() {
-    if (gHidePopupTimer) {
-        clearTimeout(gHidePopupTimer);
-        gHidePopupTimer = null;
-    }
-},	
-  popened:false,
-  showNchPopup: function(miniElem, event, popupId) {	
-
-// event.stopPropagation();
-				document.getElementById('pokusinfo').value=event.target.id;
-/*
-   if (!event.relatedTarget) {
-        // we somehow got to this button from the outside
-        // ignore
-        return;
-    }
-
-    **/
-	if (event.target.id=="pokuspanel") {
-         if (this.popened) return true;
-	  		var _this = this;
-
-		    gPopupTimer = setTimeout(function() {
-				document.getElementById('pokusinfo2').value='oteviram';
-			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
-			  _this.popened=true;
-		    }, 500);
-//			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
-}
- return true;
   },
+  showNchPopup: function(miniElem, event, popupId) {	
+	  if(event.button == 0) 
+		  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
+  },
+
 
 
 
@@ -822,46 +766,53 @@ cancelHide: function() {
 
 
   enumerateStatus: function(problems) {
-	var paket = new NCHPaket(this.showColInfo,this.showColAlias);
-
+ var paket = new NCHPaket(this.showColInfo,this.showColAlias);
     var newProblems={};
     for(var i=0;i<problems.length;i++) {
-		paket.addTooltipHeader('all',this._servers[i].name,i,problems[i]["_time"]);
+	 paket.addTooltipHeader('all',this._servers[i].name,i);
         if (problems[i]["_error"]) {
-			paket.addError('all');
+
+		 paket.addError('all');
         }
 
         var st = null;
-		var isNotUp = {};
-		var isAck = {};
+		    var isNotUp = {};
+		    var isAck = {};
+		    var isSched = {};
 
-		for(var x=0;x<this.pt.length;x++) {
-		
-			var probls = (problems[i]["_error"]) ? null : problems[i][this.pt[x]];
+ 		    for(var x=0;x<this.pt.length;x++) {
+			    var probls = (problems[i]["_error"]) ? null : problems[i][this.pt[x]];
 
-			if (((probls) && (probls.length)) || (!probls)){
-				paket.addTooltipHeader(this.pt[x],this._servers[i].name,i);
-			}		  	
+  			  if (((probls) && (probls.length)) || (!probls)){
+			 paket.addTooltipHeader(this.pt[x],this._servers[i].name,i);
+			    }		  	
 
-			if (!probls) {
-				paket.addError(this.pt[x]);
-			}
-			else {
-				st=this.pt[x];
+          if (!probls) {
+			 paket.addError(this.pt[x]);
+          }
+          else {
 
-				for (var j =0;j<probls.length;j++) {
+   						st=this.pt[x];
 
-					if  (
-						(!this.filterOutAll[st])
+			    for (var j =0;j<probls.length;j++) {
+
+				    if  (
+            	(!this.filterOutAll[st])
 					    &&
-						((!probls[j].acknowledged) || ((probls[j].acknowledged) && (!this.filterOutAck))) 
+	          	((!probls[j].acknowledged) || ((probls[j].acknowledged) && (!this.filterOutAck))) 
 					    &&
 					    ((!probls[j].dischecks) || ((probls[j].dischecks) && (!this.filterOutDisChe))) 
 					    &&
 					    ((!probls[j].disnotifs) || ((probls[j].disnotifs) && (!this.filterOutDisNot)))
 					    &&
-					    ((!probls[j].downtime) || ((probls[j].downtime) && (!this.filterOutDowntime)))
-    			    	&&
+					    ((!this.filterOutDowntime) || ((this.filterOutDowntime) && 
+					            (
+					    		((!probls[j].service) && (!probls[j].downtime))
+				    			|| 
+					    		((probls[j].service) && (!probls[j].downtime) && (!isSched[probls[j].host]))
+					    		)))
+
+	    			    &&
 		    			((!probls[j].isSoft) || ((probls[j].isSoft) && ((!this.filterOutSoftStat) || (isNotUp[probls[j].host]))))
 					    &&
 					    ((!this.filterOutServOnDown) || ((this.filterOutServOnDown) && ((!probls[j].service) || ((probls[j].service) && (!isNotUp[probls[j].host])))))
@@ -873,18 +824,23 @@ cancelHide: function() {
 					    ((!this.filterOutREServices) || ((this.filterOutREServices) && (!probls[j].service.match(new RegExp(this.filterOutREServicesValue)))))
 					    ) {
 
-						var uniq = this._servers[i].name+"-"+probls[j].host+"-"+probls[j].service+"-"+probls[j].status;
-						newProblems[uniq]=probls[j];
-						paket.addProblem(i,this.pt[x],this.oldProblems[uniq],probls[j],this._servers[i].aliases[probls[j].host]);
+						    var uniq = this._servers[i].name+"-"+probls[j].host+"-"+probls[j].service+"-"+probls[j].status;
+			            	newProblems[uniq]=probls[j];
+
+				    		paket.addProblem(i,this.pt[x],this.oldProblems[uniq],probls[j],this._servers[i].aliases[probls[j].host]);
 				    }
-					if ((this.pt[x]=="down") || (this.pt[x]=="unreachable")) {
-						isNotUp[probls[j].host]=true;
+  				  if ((this.pt[x]=="down") || (this.pt[x]=="unreachable")) {
+					    isNotUp[probls[j].host]=true;
 					    if (probls[j].acknowledged) {
 						    isAck[probls[j].host]=true;
 					    }
+					    if (probls[j].downtime) {
+						    isSched[probls[j].host]=true;
+					    }
 				    }
 			    }
-			}
+
+          }
           
 
 
@@ -913,17 +869,7 @@ cancelHide: function() {
 			  mainPanel.setAttribute("onclick","nagioschecker.statusBarOnClick(event,'main');");
 			  break;
 		  case 3:
-//		  	mainPanel.setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
-//		  	mainPanel.setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
-//		  	mainPanel.setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
-//		  	mainPanel.setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
-
-        for (var pType in fld) {
-//		  	fld[pType].setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
-//		  	fld[pType].setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
-//		  	fld[pType].setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
-        }
-
+		  	mainPanel.setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
 			  break;
 		  default:
 	  		mainPanel.removeAttribute("onclick");
@@ -966,7 +912,6 @@ cancelHide: function() {
   },
 
   resetTooltips: function(isAny) {
-/*
     var fld = {
               "down":document.getElementById('nagioschecker-hosts-down'),
             	"unreachable": document.getElementById('nagioschecker-hosts-unreachable'),
@@ -979,7 +924,7 @@ cancelHide: function() {
 
     if ((isAny) && (this.infoWindowType>0)) {
       if (this.infoWindowType==1) {
-//        mainPanel.setAttribute("tooltip", "nagioschecker-tooltip");
+        mainPanel.setAttribute("tooltip", "nagioschecker-tooltip");
         for (var pType in fld) {
           fld[pType].removeAttribute("tooltip");
         } 
@@ -987,7 +932,7 @@ cancelHide: function() {
       else {
   		  mainPanel.removeAttribute("tooltip");
         for (var pType in fld) {
-//          fld[pType].setAttribute("tooltip", "nagioschecker-tooltip-"+pType);
+          fld[pType].setAttribute("tooltip", "nagioschecker-tooltip-"+pType);
         }
       }
     }
@@ -997,7 +942,6 @@ cancelHide: function() {
         fld[pType].removeAttribute("tooltip");
       }
     }
-*/ 
   },
 
 
@@ -1296,7 +1240,7 @@ function NCHToolTip(showColInfo,showColAlias) {
 
 	 for(var i = 0;i<this.headers.length;i++) {
     	if ((this.headers[i].problems.length) || (this.headers[i].error)) {
-			this.createHeader(this.headers[i].data,this.headers[i].time);  
+			this.createHeader(this.headers[i].data);  
         	if (!this.headers[i].error) {
 
 	  			this.headers[i].problems.sort(function (a,b) {
@@ -1323,7 +1267,7 @@ function NCHToolTip(showColInfo,showColAlias) {
 
 
   }
-  this.createHeader= function(name,time) {
+  this.createHeader= function(name) {
 
     var doc=document;
 
@@ -1332,20 +1276,10 @@ function NCHToolTip(showColInfo,showColAlias) {
 		separator.setAttribute("class", "groove-thin");
 		this._rows.appendChild(separator);
 
-    var hbd = doc.createElement("hbox");
-		this._rows.appendChild(hbd);
-
     var description = doc.createElement("description");
 		description.setAttribute("class", "nagioschecker-tooltip-title");
 		description.setAttribute("value",name);
-		hbd.appendChild(description);
-    var sp = doc.createElement("spacer");
-		sp.setAttribute("flex", "1");
-		hbd.appendChild(sp);
-    var description2 = doc.createElement("description");
-		description2.setAttribute("class", "nagioschecker-tooltip-title-date");
-		description2.setAttribute("value",(time!=null) ? time.toLocaleString() : "");
-		hbd.appendChild(description2);
+		this._rows.appendChild(description);
 
 		var separator = doc.createElement("separator");
 		separator.setAttribute("class", "groove-thin");
@@ -1367,8 +1301,8 @@ function NCHToolTip(showColInfo,showColAlias) {
 
 
   }
-  this.addHeader= function(name,serPo,timeFetch) {
-		this.headers[++this.actH]={data:name,error:false,problems:[],aliases:{},news:{},servPos:serPo,time:timeFetch};
+  this.addHeader= function(name,serPo) {
+		this.headers[++this.actH]={data:name,error:false,problems:[],aliases:{},news:{},servPos:serPo};
 	}
   this.addError= function() {
 		this.headers[this.actH].error=true;
@@ -1472,8 +1406,8 @@ function NCHPaket(sci,sca) {
 	this.warning = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
 	this.critical = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
 	this.isError = false;
-	this.addTooltipHeader = function(to,header,serverPos,timeFetch) {
-	 	this[to][0].addHeader(header,serverPos,timeFetch);
+	this.addTooltipHeader = function(to,header,serverPos) {
+	 	this[to][0].addHeader(header,serverPos);
 	}
 	this.addError = function(to) {
 		this[to][0].addError();
