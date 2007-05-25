@@ -680,7 +680,6 @@ NCH.prototype = {
 
   hideNchPopup: function(popupId,event) {
 // event.stopPropagation();
-				document.getElementById('pokusinfo').value=event.target.id;
 /*
 	 gHidePopupTimer = setTimeout(function() {
 				document.getElementById('pokusinfo2').value='zaviram';
@@ -689,13 +688,18 @@ NCH.prototype = {
 	 }, 100);
 */ 
 
-	if (event.target.id=="pokuspanel") {
+				document.getElementById('pokusinfo').value=event.target.id+":"+event.currentTarget.id;
+				document.getElementById('pokusinfo2').value='zaviram';
+	if ((event.target.id=="pokuspanel") && (event.currentTarget.id=="pokuspanel")) {
+
+		document.getElementById(popupId).hidePopup();
+			  this.popened=false;
+/*
 	var _this=this;
 	 gHidePopupTimer = setTimeout(function() {
-				document.getElementById('pokusinfo2').value='zaviram';
-		document.getElementById(popupId).hidePopup();
 			  _this.popened=false;
 	 }, 100);
+	 */
 	}
 
 //		document.getElementById(popupId).hidePopup();
@@ -719,7 +723,6 @@ cancelHide: function() {
   showNchPopup: function(miniElem, event, popupId) {	
 
 // event.stopPropagation();
-				document.getElementById('pokusinfo').value=event.target.id;
 /*
    if (!event.relatedTarget) {
         // we somehow got to this button from the outside
@@ -728,15 +731,22 @@ cancelHide: function() {
     }
 
     **/
-	if (event.target.id=="pokuspanel") {
+				document.getElementById('pokusinfo').value=event.target.id+":"+event.currentTarget.id;
+				
+				document.getElementById('pokusinfo2').value='oteviram';
+	if ((event.target.id=="pokuspanel") && (event.currentTarget.id=="pokuspanel")) {
          if (this.popened) return true;
 	  		var _this = this;
-
+/*
 		    gPopupTimer = setTimeout(function() {
-				document.getElementById('pokusinfo2').value='oteviram';
 			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
 			  _this.popened=true;
 		    }, 500);
+		*/
+
+			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
+			  this.popened=true;
+
 //			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
 }
  return true;
