@@ -18,7 +18,6 @@ caption.nch {
   padding:0;border:0;
 }
 .nagioschecker-panel label{
-font-size:20px;
 }
 
 statusbarpanel .nagioschecker-box {
@@ -190,15 +189,6 @@ statusbarpanel .nagioschecker-box {
   font-size: 1.2em;
   margin-bottom: 4px;
  -moz-border-radius:3px;
-  background-color:#FFFFF;
-}
-
-.nagioschecker-tooltip-title-date {
-  font-weight: bold;
-  font-size: 0.9em;
-  margin-bottom: 4px;
- -moz-border-radius:3px;
-  background-color:#FFFFF;
 }
 
 .nagioschecker-tooltip-down-row {
