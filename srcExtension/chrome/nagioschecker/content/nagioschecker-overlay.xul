@@ -29,16 +29,16 @@ gMini=false;
   		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
         >
 		  <label id="pokusinfo" value="X" />
+		  <label id="pokusinfo3" value="Z" />
 		  <label id="pokusinfo2" value="Y" />
 		   <label id="pokus1" value="Jedna" class="nagioschecker-down-value"
-		 onmouseover="event.preventDefault();"
-		 onmouseout="event.preventDefault();"
-		   
+		   onmouseover="event.stopPropagation();"
+		   onmousemove="event.stopPropagation();"
+		   onmouseout="event.stopPropagation();"
 		   />
-		   <spacer flex="1"/>
 		  <label id="pokus2" class="nagioschecker-warning-value" value="Dve"
-		  		 onmouseover="return true;"
-		 onmouseout="return true;"
+		   onmouseover="event.stopPropagation();"
+		   onmouseout="event.stopPropagation();"
 		  />
     </statusbarpanel>
 
