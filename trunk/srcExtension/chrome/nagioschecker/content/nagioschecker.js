@@ -679,34 +679,57 @@ NCH.prototype = {
   },
 
   hideNchPopup: function(popupId,event) {
-// event.stopPropagation();
-/*
-	 gHidePopupTimer = setTimeout(function() {
-				document.getElementById('pokusinfo2').value='zaviram';
-		document.getElementById(popupId).hidePopup();
-			  _this.popened=false;
-	 }, 100);
-*/ 
-
-				document.getElementById('pokusinfo').value=event.target.id+":"+event.currentTarget.id;
-				document.getElementById('pokusinfo2').value='zaviram';
-	if ((event.target.id=="pokuspanel") && (event.currentTarget.id=="pokuspanel")) {
-
+//	    document.getElementById('pokusinfo4').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
+	if (
+		((event.originalTarget.id=="pokuspanel")||(event.originalTarget.id=="nagioschecker-popup"))
+		&&
+		((event.currentTarget.id=="pokuspanel")||(event.currentTarget.id=="nagioschecker-popup"))
+		&&
+		(this.popened)
+		&&
+/*		
+		((!this.pover)
+		||
+		((event.explicitOriginalTarget.id=="nagioschecker-popup") && (this.pover)))
+		*/ 
+		
+		(event.explicitOriginalTarget.id!="nagioschecker-popup")
+		&&
+		(event.explicitOriginalTarget.id!="pokusinfo")
+		&&
+		(event.explicitOriginalTarget.id!="pokusinfo2")
+		&&
+		(event.explicitOriginalTarget.id!="pokusinfo3")
+		&&
+		(event.explicitOriginalTarget.id!="pokusinfo4")
+		&&
+		(event.explicitOriginalTarget.id!="pokusinfo5")
+		&&
+		(event.explicitOriginalTarget.id!="pokus1")
+		&&
+		(event.explicitOriginalTarget.id!="pokus2")
+		 
+		)
+		 {
+	    document.getElementById('pokusinfo').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
 		document.getElementById(popupId).hidePopup();
 			  this.popened=false;
+			  this.pover=false;
+
 /*
 	var _this=this;
 	 gHidePopupTimer = setTimeout(function() {
+		document.getElementById(popupId).hidePopup();
 			  _this.popened=false;
 	 }, 100);
-	 */
+*/	 
 	}
 
 //		document.getElementById(popupId).hidePopup();
 //			  this.popened=false;
  return true;
    },
-  
+  pover:false,
   cancelShow: function() {
     if (gPopupTimer) {
         clearTimeout(gPopupTimer);
@@ -721,6 +744,7 @@ cancelHide: function() {
 },	
   popened:false,
   showNchPopup: function(miniElem, event, popupId) {	
+//	    document.getElementById('pokusinfo4').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
 
 // event.stopPropagation();
 /*
@@ -731,19 +755,18 @@ cancelHide: function() {
     }
 
     **/
-				document.getElementById('pokusinfo').value=event.target.id+":"+event.currentTarget.id;
-				
-				document.getElementById('pokusinfo2').value='oteviram';
-	if ((event.target.id=="pokuspanel") && (event.currentTarget.id=="pokuspanel")) {
-         if (this.popened) return true;
-	  		var _this = this;
+//         if (this.popened) return true;
+	if ((event.explicitOriginalTarget.id=="pokuspanel") 
+	&&
+	(!this.popened))
+	{
 /*
+	  		var _this = this;
 		    gPopupTimer = setTimeout(function() {
 			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
 			  _this.popened=true;
 		    }, 500);
-		*/
-
+*/
 			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
 			  this.popened=true;
 

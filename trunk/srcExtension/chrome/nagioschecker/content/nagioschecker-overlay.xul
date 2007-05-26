@@ -13,7 +13,20 @@ gMini=false;
 	<script type="application/x-javascript">
 		window.addEventListener("load", nagioscheckerLoad, false);
     window.addEventListener("unload", nagioscheckerUnload, false);
+    
+    
+    function stopPropag(event) {
+    event.preventDefault();
+	    document.getElementById('pokusinfo5').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
+    }
+    
 	</script>
+
+<!-- 
+  		  onmouseover="nagioschecker.showNchPopup(this,event,'nagioschecker-popup');"
+  		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
+
+ -->
 
   <stringbundleset id="stringbundleset">
     <stringbundle id="nch-strings" src="chrome://nagioschecker/locale/nagioschecker.properties"/>
@@ -28,17 +41,20 @@ gMini=false;
   		  onmouseover="nagioschecker.showNchPopup(this,event,'nagioschecker-popup');"
   		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
         >
-		  <label id="pokusinfo" value="X" />
-		  <label id="pokusinfo3" value="Z" />
-		  <label id="pokusinfo2" value="Y" />
+		  <label id="pokusinfo5" value="O"
+		  		   onmouseout="stopPropag(event);"
+		   />
+		  <label id="pokusinfo4" value="O"
+		  		   onmouseout="stopPropag(event);"
+		   />
+		  <label id="pokusinfo" value="X"
+		  		   onmouseout="stopPropag(event);"
+		   />
 		   <label id="pokus1" value="Jedna" class="nagioschecker-down-value"
-		   onmouseover="event.stopPropagation();"
-		   onmousemove="event.stopPropagation();"
-		   onmouseout="event.stopPropagation();"
+		   onmouseout="stopPropag(event);"
 		   />
 		  <label id="pokus2" class="nagioschecker-warning-value" value="Dve"
-		   onmouseover="event.stopPropagation();"
-		   onmouseout="event.stopPropagation();"
+		   onmouseout="stopPropag(event);"
 		  />
     </statusbarpanel>
 
@@ -57,7 +73,11 @@ gMini=false;
   	    <menuseparator />  
         <menuitem label="&nch.about;..." oncommand="window.openDialog('chrome://nagioschecker/content/nagioschecker-about.xul','nagioschecker-about','centerscreen,dialog,chrome').focus();" />
       </menupopup>
-    <popup id="nagioschecker-popup" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"/>
+    <popup id="nagioschecker-popup" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"
+      		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
+      		  onmouseover="nagioschecker.pover=true;"
+    
+    />
     <popup id="nagioschecker-popup-down" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"/>
     <popup id="nagioschecker-popup-unreachable" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"/>
     <popup id="nagioschecker-popup-unknown" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"/>
