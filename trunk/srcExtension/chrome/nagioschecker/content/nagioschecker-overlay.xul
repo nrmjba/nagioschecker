@@ -17,7 +17,7 @@ gMini=false;
     
     function stopPropag(event) {
     event.preventDefault();
-	    document.getElementById('pokusinfo5').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
+//	    document.getElementById('pokusinfo5').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
     }
     
 	</script>
@@ -41,20 +41,16 @@ gMini=false;
   		  onmouseover="nagioschecker.showNchPopup(this,event,'nagioschecker-popup');"
   		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
         >
+        
 		  <label id="pokusinfo5" value="O"
-		  		   onmouseout="stopPropag(event);"
 		   />
 		  <label id="pokusinfo4" value="O"
-		  		   onmouseout="stopPropag(event);"
 		   />
 		  <label id="pokusinfo" value="X"
-		  		   onmouseout="stopPropag(event);"
 		   />
 		   <label id="pokus1" value="Jedna" class="nagioschecker-down-value"
-		   onmouseout="stopPropag(event);"
 		   />
 		  <label id="pokus2" class="nagioschecker-warning-value" value="Dve"
-		   onmouseout="stopPropag(event);"
 		  />
     </statusbarpanel>
 
@@ -74,7 +70,7 @@ gMini=false;
         <menuitem label="&nch.about;..." oncommand="window.openDialog('chrome://nagioschecker/content/nagioschecker-about.xul','nagioschecker-about','centerscreen,dialog,chrome').focus();" />
       </menupopup>
     <popup id="nagioschecker-popup" class="nagioschecker-popup" onpopupshown="nagioschecker.popupOpened();" onpopuphidden="nagioschecker.popupClosed();"
-      		  onmouseout="nagioschecker.hideNchPopup('nagioschecker-popup',event);"
+      		  onmouseout="nagioschecker.hideNchPopup2('nagioschecker-popup',event);"
       		  onmouseover="nagioschecker.pover=true;"
     
     />
