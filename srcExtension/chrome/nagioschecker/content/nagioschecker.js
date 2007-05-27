@@ -678,12 +678,13 @@ NCH.prototype = {
     this.resetTooltips(true);
   },
 
+
   hideNchPopup: function(popupId,event) {
 //	    document.getElementById('pokusinfo4').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
 	if (
-		((event.originalTarget.id=="pokuspanel")||(event.originalTarget.id=="nagioschecker-popup"))
+		((event.originalTarget.id=="pokuspanel"))
 		&&
-		((event.currentTarget.id=="pokuspanel")||(event.currentTarget.id=="nagioschecker-popup"))
+		((event.currentTarget.id=="pokuspanel"))
 		&&
 		(this.popened)
 		&&
@@ -711,7 +712,7 @@ NCH.prototype = {
 		 
 		)
 		 {
-	    document.getElementById('pokusinfo').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
+//	    document.getElementById('pokusinfo').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
 		document.getElementById(popupId).hidePopup();
 			  this.popened=false;
 			  this.pover=false;
@@ -725,8 +726,40 @@ NCH.prototype = {
 */	 
 	}
 
-//		document.getElementById(popupId).hidePopup();
-//			  this.popened=false;
+
+  },
+  hideNchPopup2: function(popupId,event) {
+	    document.getElementById('pokusinfo4').value="P:"+event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id+":"+((event.relatedTarget) ? event.relatedTarget.id : "NULL" );
+
+	if (
+		(event.target.id=="nagioschecker-popup")
+		&&
+		(event.originalTarget.id=="nagioschecker-popup")
+		&&
+		(event.explicitOriginalTarget.id=="nagioschecker-popup")
+		&&
+		(event.currentTarget.id=="nagioschecker-popup")
+		&&
+		(event.relatedTarget) &&
+		(
+		(event.relatedTarget.id!="nagioschecker-popup")
+		 )
+		)
+		 {
+  
+//	    document.getElementById('pokusinfo').value="P:"+event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
+		document.getElementById(popupId).hidePopup();
+			  this.popened=false;
+			  this.pover=false;
+
+/*
+	var _this=this;
+	 gHidePopupTimer = setTimeout(function() {
+		document.getElementById(popupId).hidePopup();
+			  _this.popened=false;
+	 }, 100);
+*/	 
+	}
  return true;
    },
   pover:false,
