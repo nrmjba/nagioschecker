@@ -1,6 +1,22 @@
-var gPopupTimer = null;
-var gHidePopupTimer=null;
+var _showTimerID = null;
+var _tab = null;
+var MAX_SERVERS=200;
+var ev2pop = {
+			  'nagioschecker-popup':'nagioschecker-popup',
+			  'nagioschecker-popup-down':'nagioschecker-popup-down',
+			  'nagioschecker-popup-unreachable':'nagioschecker-popup-unreachable',
+			  'nagioschecker-popup-unknown':'nagioschecker-popup-unknown',
+			  'nagioschecker-popup-warning':'nagioschecker-popup-warning',
+			  'nagioschecker-popup-critical':'nagioschecker-popup-critical',
+			  'nagioschecker-panel':'nagioschecker-popup',
+			  'nagioschecker-img':'nagioschecker-popup',
+			  'nagioschecker-hosts-down':'nagioschecker-popup-down',
+			  'nagioschecker-hosts-unreachable':'nagioschecker-popup-unreachable',
+			  'nagioschecker-services-unknown':'nagioschecker-popup-unknown',
+			  'nagioschecker-services-warning':'nagioschecker-popup-warning',
+			  'nagioschecker-services-critical':'nagioschecker-popup-critical'};
 
+var isFirst = null;
 var nagioschecker = null;
 var nagioscheckerLoad = function() {
 
@@ -9,6 +25,7 @@ var nagioscheckerLoad = function() {
   Components.classes["@mozilla.org/observer-service;1"]
             .getService(Components.interfaces.nsIObserverService)
             .addObserver(nagioschecker, "nagioschecker:preferences-changed", false);
+
 
   nagioschecker.start();
 };
@@ -39,60 +56,146 @@ var nagioscheckerUnload = function() {
 function NCH() {};
 
 NCH.prototype = {
+	_uid:0,
   bundle: null,
   url: null,
-  update_interval:null,
   worktime_from:null,
   worktime_to:null,
   _servers:[],
+  _serversEnabled:0,
   urlSide: "",
   urlServices: "",
   urlHosts: "",
   urlStatus:"",
-  one_window_only: false,
   timeoutId: null,
   isStopped:false,
-  timoutSec:30,
-  sndWarning:null,
-  sndCritical:null,
-  sndDown:null,
+  win:window,
   preferences: Components.classes["@mozilla.org/preferences-service;1"]
                                 .getService(Components.interfaces.nsIPrefBranch),
-
-
   oldProblems:{},
-
-  infoType:0,
-  infoWindowType:0,
   showSb:{},
-  showColInfo:true,
-  showColAlias:false,
-  play_sound: 2,
-  blinking: 2,
-  doubleclick: 0,
-  oneclick: 0,
-  filterOutAck: true,
-  filterOutDisNot: false,
-  filterOutDisChe: true,
-  filterOutSoftStat: false,
-  filterOutDowntime: false,
-  filterOutServOnDown: false,
-  filterOutServOnAck: false,
-  filterOutREHosts: false,
-  filterOutREServices: false,
-  filterOutREHostsValue: "",
-  filterOutREServicesValue: "",
   filterOutAll:{"down":false,"unreachable":false,"uknown":false,"warning":false,"critical":false},
   soundBT:{},
   parser: null,
   pt:["down","unreachable","unknown","warning","critical"],
-  results:{},
+  results:null,
+  isMoving : false,
+  startX : -1,
+  startY : -1,
+  undockedWindow : null,
+  pref:{},
+  _showTimerID: null,
+  _refreshTimer: null,
+
+  handleMouseClick: function (aEvent) {
+	  if(aEvent.button == 0) {
+//dump('\nCLICKout'+aEvent.target.id);
+  	nagioschecker.abort();
+//dump('\nCLICKover'+aEvent.target.id);
+  	nagioschecker.handleMouseOver(aEvent);
+	  }
+  },
+
+
+  handleMouseOver: function (aEvent) {
+//dump('\n'+nagioschecker.openedPops.length+' out'+aEvent.target.id);
+	if (_showTimerID ) {
+		return;
+	}
+//dump('v')	;
+		if ((aEvent.target.id == "nagioschecker-img")||(aEvent.target.id == "nagioschecker-panel")||(aEvent.target.localName == "label")||(aEvent.target.localName == "popup")) {
+//dump(' '+aEvent.target.localName+":"+_tab+":"+ev2pop[aEvent.target.id]);
+		if (aEvent.target == _tab) {
+			return;
+		}
+		_tab = aEvent.target;
+		var relPopup=document.getElementById(ev2pop[aEvent.target.id]);
+		var callback = function(self) {
+			if (relPopup) {
+//dump("OTEVREN:"+aEvent.target.id+" "+ev2pop[aEvent.target.id]);
+				relPopup.showPopup(_tab,  -1, -1, 'popup', 'topleft' , 'bottomleft');
+				nagioschecker.openedPops.push(ev2pop[aEvent.target.id]);
+			}
+		};
+		_showTimerID = window.setTimeout(callback, 10, this);
+	}
+  },
+
+  openedPops : [],
+  handleMouseOut: function (aEvent) {
+//dump('\nout'+aEvent.target.id);
+	var rel = aEvent.relatedTarget;
+	var popupMain = document.getElementById('nagioschecker-popup');
+	var popupDown = document.getElementById('nagioschecker-popup-down');
+	var popupUnreachable = document.getElementById('nagioschecker-popup-unreachable');
+	var popupUnknown = document.getElementById('nagioschecker-popup-unknown');
+	var popupCritical = document.getElementById('nagioschecker-popup-critical');
+	var popupWarning = document.getElementById('nagioschecker-popup-warning');
+	
+	if (rel) {
+		while (rel) {
+//dump(' '+rel.localName+':'+rel.id);
+			if (rel == _tab || rel == popupMain || rel == popupDown || rel == popupUnreachable || rel == popupUnknown || rel == popupCritical || rel == popupWarning)
+				return;
+			rel = rel.parentNode;
+		}
+//dump('['+aEvent.target.id+']');
+		nagioschecker.abort();
+		return;
+	}
+	var x = aEvent.screenX;
+	var y = aEvent.screenY;
+	if (nagioschecker.isEntering(x, y, popupMain, true) || nagioschecker.isEntering(x, y, popupDown, true) ||
+		nagioschecker.isEntering(x, y, popupUnreachable, true) || nagioschecker.isEntering(x, y, popupUnknown, true) ||	    
+		nagioschecker.isEntering(x, y, popupCritical, true) || nagioschecker.isEntering(x, y, popupWarning, true) ||	    
+		nagioschecker.isEntering(x, y, _tab, true))
+		return;
+	nagioschecker.abort();   	
+  },
+  abort: function() {
+//dump('ABORT');
+	if (_showTimerID) {
+		window.clearTimeout(_showTimerID);
+		_showTimerID = null;
+	}
+	if (_tab) {
+		for (var i in nagioschecker.openedPops) {
+			if (nagioschecker.openedPops[i])
+				document.getElementById(nagioschecker.openedPops[i]).hidePopup();
+				
+		}
+		nagioschecker.openedPops = [];
+		
+	}
+	_tab = null;  	
+  },
+  
+  isEntering: function(aScreenX,aScreenY,aElement,aAllowOnEdge) {
+	var x = aElement.boxObject.screenX;
+	var y = aElement.boxObject.screenY;
+	var c = aAllowOnEdge ? 1 : 0;
+//dump('x:'+x+' y:'+y+' ax:'+aScreenX+' ay:'+aScreenY+'\n');
+	if (x < aScreenX - c && aScreenX < x + aElement.boxObject.width + c && 
+		y < aScreenY - c && aScreenY < y + aElement.boxObject.height + c) {
+		return true;
+	}
+	return false;   	
+  },
+  
+  _super: null,
   start : function() {
-/*
-    if (gMini) {
-      this.adjustSize(null,true);  
-    }
-*/
+	this._uid = Math.floor(Math.random()*10000);
+	this.results=new NCHPaket(this.pref);
+	if (gMini) {
+   var resizer = document.getElementById('nagioschecker-mover');
+
+       window.addEventListener('mouseup', 
+                function(event) { nagioschecker.onUndockUp(event) }, false);
+       window.addEventListener('mousedown', 
+                function(event) { nagioschecker.onUndockDown(event) }, false);
+       window.addEventListener('mousemove', 
+                function(event) { nagioschecker.onUndockMove(event) }, false);
+	}
     this.parser = new NCHParser();
     this.bundle = document.getElementById("nch-strings");
     this.setNoData(null);
@@ -102,9 +205,68 @@ NCH.prototype = {
     }
     catch(e) {}
 
-    this.reload(true);
+		var me = this;
+		setTimeout(function() {
+			me.reload(true);
+		},1000);
   },
 
+  adjustSize : function(event, firstTime) {
+
+        var currentX = window.screenX;
+        var currentY = window.screenY;
+        var currentWidth = window.outerWidth;
+        var right = currentX + currentWidth; 
+        sizeToContent();
+
+        var newWidth = window.outerWidth;
+        var left = right - newWidth;
+        
+        moveTo(left, currentY);
+        
+        var me = this;
+        if (firstTime) {
+            // doing sizeToContent once often leaves the minimode in incorrect state
+            // let's do it one more time
+            setTimeout(function() { me.adjustSize(event); }, 100);
+        }
+
+    },
+
+  
+    onUndockMove : function(event) {
+       if (!this.isMoving) return;
+
+        var currentX = event.screenX;
+        var currentY = event.screenY;
+        var deltaX = currentX - this.startX;
+        var deltaY = currentY - this.startY;
+        this.undockedWindow.moveBy(deltaX, deltaY);
+
+        this.startX = currentX;
+        this.startY = currentY;
+
+
+    },
+
+    onUndockUp : function(event) {
+        if (!this.isMoving) return;
+        this.isMoving = false;
+    },
+
+    onUndockDown : function(event) {
+        if (event.target.tagName != 'titlebar') return;
+        if (this.isMoving) return;
+        this.isMoving = true;
+        this.startX = event.screenX;
+        this.startY = event.screenY;
+
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                    .getService(Components.interfaces.nsIWindowMediator);
+        this.undockedWindow = wm.getMostRecentWindow('nch:undocked');
+        if (!this.undockedWindow) return;
+
+    },
 
   isFirstWindow: function() {
   
@@ -131,16 +293,110 @@ NCH.prototype = {
 
 
   switchStop: function() {
-    var firstWin = this.getFirstWindow();
-    firstWin.nagioschecker.isStopped = (!firstWin.nagioschecker.isStopped);
-    document.getElementById('nagioschecker-stoprun').setAttribute("label",(firstWin.nagioschecker.isStopped) ? this.bundle.getString("runagain") : this.bundle.getString("stop"));
-	  this.preferences.setBoolPref("extensions.nagioschecker.stopped",firstWin.nagioschecker.isStopped);
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+    var browserWindow = wm.getMostRecentWindow("navigator:browser");
+    var enumerator = wm.getEnumerator("");
+    var cnt=0;
+	var firstWin = null;
+    while(enumerator.hasMoreElements()) {
+      var win = enumerator.getNext();
+      if (cnt==0) {
+      	firstWin=win;
+	    firstWin.nagioschecker.isStopped = (!firstWin.nagioschecker.isStopped);
+      }
+      else {
+      	if (win.nagioschecker) {
+	      	win.nagioschecker.isStopped = firstWin.nagioschecker.isStopped;
+      	}
+      }
+      if (win.document) {
+      	
+	    win.document.getElementById('nagioschecker-stoprun').setAttribute("label",(firstWin.nagioschecker.isStopped) ? this.bundle.getString("runagain") : this.bundle.getString("stop"));
+      }
+		win.nagioschecker.resetBehavior();
+      cnt++;
+	}
+
+    this.preferences.setBoolPref("extensions.nagioschecker.stopped",firstWin.nagioschecker.isStopped);
     firstWin.nagioschecker.reload(true);
   },
 
   reload : function(firstRun) {
 
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+    var browserWindow = wm.getMostRecentWindow("navigator:browser");
+    var enumerator = wm.getEnumerator("");
+    var cnt=0;
+    while(enumerator.hasMoreElements()) {
+      var win = enumerator.getNext();
+      win.isFirst = (cnt==0);
+	  cnt++;
+    }
+
+
+  	this.pref = this.loadPref("extensions.nagioschecker.",{
+			sound_warning:['int',0],
+			sound_warning_path:['char','chrome://nagioschecker/content/warning.wav'],
+			sound_critical:['int',0],
+			sound_critical_path:['char','chrome://nagioschecker/content/critical.wav'],
+			sound_down:['int',0],
+			sound_down_path:['char','chrome://nagioschecker/content/hostdown.wav'],
+			stopped:['bool',false],
+			timeout:['int',30],
+			info_type:['int',0],
+			info_window_type:['int',0],
+			show_statusbar_down:['bool',true],
+			show_statusbar_unreachable:['bool',true],
+			show_statusbar_warning:['bool',true],
+			show_statusbar_critical:['bool',true],
+			show_statusbar_unknown:['bool',true],
+			filter_out_all_down:['bool',false],
+			filter_out_all_unreachable:['bool',false],
+			filter_out_all_warning:['bool',false],
+			filter_out_all_critical:['bool',false],
+			filter_out_all_unknown:['bool',false],
+			sounds_by_type_down:['bool',true],
+			sounds_by_type_unreachable:['bool',true],
+			sounds_by_type_warning:['bool',true],
+			sounds_by_type_critical:['bool',true],
+			sounds_by_type_unknown:['bool',true],
+			show_window_column_information:['bool',true],
+			show_window_column_flags:['bool',false],
+			show_window_column_alias:['bool',false],
+			show_window_column_attempt:['bool',false],
+			show_window_column_status:['bool',true],
+			filter_out_acknowledged:['bool',true],
+			filter_out_disabled_notifications:['bool',true],
+			filter_out_disabled_checks:['bool',true],
+			filter_out_soft_states:['bool',false],
+			filter_out_downtime:['bool',false],
+			filter_out_services_on_down_hosts:['bool',false],
+			filter_out_services_on_acknowledged_hosts:['bool',false],
+			filter_out_regexp_hosts:['bool',false],
+			filter_out_regexp_hosts_value:['char',''],
+			filter_out_regexp_hosts_reverse:['bool',false],
+			filter_out_regexp_services:['bool',false],
+			filter_out_regexp_services_value:['char',''],
+			filter_out_regexp_services_reverse:['bool',false],
+			filter_out_flapping:['bool',false],
+			refresh:['int',5],
+			worktimefrom:['char','08:00'],
+			worktimeto:['char','18:00'],
+			play_sound:['int',2],
+			play_sound_attempt:['int',1],
+			blinking:['int',2],
+			click:['int',0],
+			one_window_only:['bool',false]
+			});
+
+    if (gMini) {
+		this.adjustSize(null,true);
+    }
+
     this._servers=[];
+	this._serversEnabled = 0;
     var pm = new  NCHPass();
 
     this.emptyInfo=[];
@@ -148,7 +404,7 @@ NCH.prototype = {
     try {
 
 
-      for(var i=0;i<20;i++) {
+      for(var i=0;i<MAX_SERVERS;i++) {
         
         var surl = this.preferences.getCharPref("extensions.nagioschecker."+(i+1)+".url");
         if (surl) {
@@ -180,249 +436,39 @@ NCH.prototype = {
                   versionOlderThan20:this.preferences.getBoolPref("extensions.nagioschecker."+(i+1)+".vot20"),
                   getAliases:gAli,
                   aliases:{},
-                  disabled:gDis,
+                  disabled:gDis
                   });
+		   if (!gDis) this._serversEnabled++;
+           
         }
       }
     }
     catch(e) {
     }
 
-    
     this.parser.setServers(this._servers);
 
-    this.sndWarning="chrome://nagioschecker/content/warning.wav";
-    try {
-      if (this.preferences.getIntPref("extensions.nagioschecker.sound_warning")) {
-        try {
-          this.sndWarning = "file:///"+this.preferences.getCharPref("extensions.nagioschecker.sound_warning_path");
-        }
-        catch(e) { }
-      }
-    }
-    catch(e) {}
-    
-    this.sndCritical="chrome://nagioschecker/content/critical.wav";
-    try {
-      if (this.preferences.getIntPref("extensions.nagioschecker.sound_critical")) {
-        try {
-          this.sndCritical = "file:///"+this.preferences.getCharPref("extensions.nagioschecker.sound_critical_path");
-        }
-        catch(e) { }
-      }
-    }
-    catch(e) {}
+	this.isStopped = this.pref.stopped;
 
-    this.sndDown="chrome://nagioschecker/content/hostdown.wav";
-    try {
-      if (this.preferences.getIntPref("extensions.nagioschecker.sound_down")) {
-        try {
-          this.sndDown = "file:///"+this.preferences.getCharPref("extensions.nagioschecker.sound_down_path");
-        }
-        catch(e) { }
-      }
-    }
-    catch(e) {}
-
-    try {
-      this.isStopped = this.preferences.getBoolPref("extensions.nagioschecker.stopped");
-    }
-    catch(e) {
-      this.isStopped = false;
-    }
-    try {
-      this.timeoutSec = this.preferences.getIntPref("extensions.nagioschecker.timeout");
-    }
-    catch(e) {
-      this.timeoutSec = 30;
-    }
-
-    this.parser.setTimeout(this.timeoutSec);
-
-    try {
-      this.infoType = this.preferences.getIntPref("extensions.nagioschecker.info_type");
-    }
-    catch(e) {
-      this.infoType = 0;
-    }
-    try {
-      this.infoWindowType = this.preferences.getIntPref("extensions.nagioschecker.info_window_type");
-    }
-    catch(e) {
-      this.infoWindowType = 0;
-    }
+    this.parser.setTimeout(this.pref.timeout);
 
     for (var i in this.pt) {
-      try {
-        this.showSb[this.pt[i]] = this.preferences.getBoolPref("extensions.nagioschecker.show_statusbar_"+this.pt[i]);
-      }
-      catch(e) {
-        this.showSb[this.pt[i]]=true;
-      }
-      try {
-        this.filterOutAll[this.pt[i]] = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_all_"+this.pt[i]);
-      }
-      catch(e) {
-        this.filterOutAll[this.pt[i]]=false;
-      }
-      try {
-        this.soundBT[this.pt[i]] = this.preferences.getBoolPref("extensions.nagioschecker.sounds_by_type_"+this.pt[i]);
-      }
-      catch(e) {
-        this.soundBT[this.pt[i]]=true;
-      }
+    	this.filterOutAll[this.pt[i]]=this.pref['filter_out_all_'+this.pt[i]];
+    	this.showSb[this.pt[i]]=this.pref['show_statusbar_'+this.pt[i]];
+    	this.soundBT[this.pt[i]]=this.pref['sounds_by_type_'+this.pt[i]];
     }
 
-    try {
-      this.showColInfo = this.preferences.getBoolPref("extensions.nagioschecker.show_window_column_information");
-    }
-    catch(e) {
-      this.showColInfo=true;
-    }
+	var sWorktimeFrom = this.pref.worktimefrom;
+	while (sWorktimeFrom.length < 5) { // fill up to 5 chars (08:40)
+		sWorktimeFrom = "0"+sWorktimeFrom;
+	}
+	this.worktime_from = ( (sWorktimeFrom.substring(0,2)*60) + (sWorktimeFrom.substring(3,5)*1) )*60;
 
-    try {
-      this.showColAlias = this.preferences.getBoolPref("extensions.nagioschecker.show_window_column_alias");
-    }
-    catch(e) {
-      this.showColAlias=false;
-    }
-
-    try {
-      this.filterOutAck = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_acknowledged");
-    }
-    catch(e) {
-      this.filterOutAck=true;
-    }
-
-    try {
-      this.filterOutDisNot = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_disabled_notifications");
-    }
-    catch(e) {
-      this.filterOutDisNot=true;
-    }
-
-    try {
-      this.filterOutDisChe = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_disabled_checks");
-    }
-    catch(e) {
-      this.filterOutDisChe=true;
-    }
-    try {
-      this.filterOutSoftStat = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_soft_states");
-    }
-    catch(e) {
-      this.filterOutSoftStat=false;
-    }
-    try {
-      this.filterOutDowntime = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_downtime");
-    }
-    catch(e) {
-      this.filterOutDowntime=false;
-    }
-    try {
-      this.filterOutServOnDown = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_services_on_down_hosts");
-    }
-    catch(e) {
-      this.filterOutServOnDown=false;
-    }
-    try {
-      this.filterOutServOnAck = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_services_on_acknowledged_hosts");
-    }
-    catch(e) {
-      this.filterOutServOnAck=false;
-    }
-
-    try {
-      this.filterOutREHosts = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_regexp_hosts");
-    }
-    catch(e) {
-      this.filterOutREHosts=false;
-    }
-
-    try {
-      this.filterOutREServices = this.preferences.getBoolPref("extensions.nagioschecker.filter_out_regexp_services");
-    }
-    catch(e) {
-      this.filterOutREServices=false;
-    }
-
-    try {
-      this.filterOutREHostsValue = this.preferences.getCharPref("extensions.nagioschecker.filter_out_regexp_hosts_value");
-    }
-    catch(e) {
-      this.filterOutREHostsValue="";
-    }
-
-    try {
-      this.filterOutREServicesValue = this.preferences.getCharPref("extensions.nagioschecker.filter_out_regexp_services_value");
-    }
-    catch(e) {
-      this.filterOutREServicesValue="";
-    }
-
-    try {
-      this.update_interval = this.preferences.getIntPref("extensions.nagioschecker.refresh");
-    }
-    catch(e) {
-      this.update_interval=5;
-    }
-
-    try {
-      sWorktimeFrom = this.preferences.getCharPref("extensions.nagioschecker.worktimefrom");
-      while (sWorktimeFrom.length < 5) { // fill up to 5 chars (08:40)
-      	sWorktimeFrom = "0"+sWorktimeFrom;
-      }
-      this.worktime_from = ( (sWorktimeFrom.substring(0,2)*60) + (sWorktimeFrom.substring(3,5)*1) )*60;
-    }
-    catch(e) {
-      this.worktime_from=28800; // 8:00
-    }
-
-    try {
-      sWorktimeTo = this.preferences.getCharPref("extensions.nagioschecker.worktimeto");
-      while (sWorktimeTo.length < 5) { // fill up to 5 chars (08:40)
-      	sWorktimeTo = "0"+sWorktimeTo;
-      }
-      this.worktime_to = ( (sWorktimeTo.substring(0,2)*60) + (sWorktimeTo.substring(3,5)*1) )*60;
-    }
-    catch(e) {
-      this.worktime_to=64800; // 18:00
-    }
-
-    try {
-      this.play_sound = this.preferences.getIntPref("extensions.nagioschecker.play_sound");
-    }
-    catch(e) {
-      this.play_sound=2;
-    }
-
-
-    try {
-      this.blinking = this.preferences.getIntPref("extensions.nagioschecker.blinking");
-    }
-    catch(e) {
-      this.blinking=2;
-    }
-/*
-    try {
-      this.doubleclick = this.preferences.getIntPref("extensions.nagioschecker.doubleclick");
-    }
-    catch(e) {
-      this.doubleclick=0;
-    }
-*/
-    try {
-      this.oneclick = this.preferences.getIntPref("extensions.nagioschecker.click");
-    }
-    catch(e) {
-      this.oneclick=0;
-    }
-    try {
-      this.one_window_only = this.preferences.getBoolPref("extensions.nagioschecker.one_window_only");
-    }
-    catch(e) {
-      this.one_window_only=false;
-    }
+	var sWorktimeTo = this.pref.worktimeto;
+	while (sWorktimeTo.length < 5) { // fill up to 5 chars (08:40)
+		sWorktimeTo = "0"+sWorktimeTo;
+	}
+	this.worktime_to = ( (sWorktimeTo.substring(0,2)*60) + (sWorktimeTo.substring(3,5)*1) )*60;
 
     document.getElementById('nagioschecker-stoprun').setAttribute("label",(this.isStopped) ? this.bundle.getString("runagain") : this.bundle.getString("stop"));
 
@@ -496,7 +542,7 @@ NCH.prototype = {
       document.getElementById('menu-separe2').setAttribute('hidden','true');
     }
 
-    this.resetBehavior(true);    
+//    this.resetBehavior();    
 		this.doUpdate();
 
 
@@ -505,45 +551,96 @@ NCH.prototype = {
 
 	doUpdate: function() {
 
-    if (this.timeoutId) {
-       clearTimeout(this.timeoutId);
-    }
+		if (this.timeoutId) {
+			clearTimeout(this.timeoutId);
+		}
+		if (this._servers.length>0) {
+			if (!this.isStopped) {
+				var firstWin = this.getFirstWindow();
+				if ((this.pref.one_window_only) && (firstWin!=window)  && (!gMini)) {
+//				this.updateAllClients(this.results);
+					this.setIcon(window,"disabled");
+				}
+				else {
+					firstWin.nagioschecker.setLoading(true);
+//					firstWin.nagioschecker.parser.fetchAllData(nagioschecker,function(probs) {nagioschecker.handleProblems(probs)});
+					var me = firstWin.nagioschecker;
+					var me2 = this;
+					firstWin.nagioschecker.parser.fetchAllData(nagioschecker,function(probs) {
+						if (document) {
+							me2.enumerateStatus(probs);
+							me.updateAllClients(me2.results);
+							var reallyPlay=false;
 
-    if (this._servers.length>0) {
-    
-    
-    if (!this.isStopped) {
+							for(var i=0;i<me.pt.length;i++) {
+								if ( 
+									((me.pref.play_sound==1) && (me.soundBT[me.pt[i]]) && (me.results[me.pt[i]][2]) && me.results.checkServiceAttempt(me.pref.play_sound_attempt))
+									||
+									((me.pref.play_sound==2) && (me.soundBT[me.pt[i]]) && (me.results[me.pt[i]][1]) && me.results.checkOldServiceAttempt(me.pref.play_sound_attempt))
+								) {
+									reallyPlay=true;
+								}
+							}
 
-      var firstWin = this.getFirstWindow();
+							if (reallyPlay) {
+								me.playSound(me.results);
+							}
+							me.setNextCheck();
+						}
+					});
+				}
+			}
+			else {
+				this.updateAllClients(this.results);
+      		}
+		}
+		else {
+			this.updateAllClients(null);
+		}
+	},
 
-      if (firstWin==window) {
-
-        this.setLoading(true);
-  			this.parser.fetchAllData(this);
-
-      }
-      else {
-        if (this.one_window_only) {
-//          this.setNoData("disabledData");
-          this.setIcon("disabled");
+  updateAllClients: function(paket) {
+  
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+    var browserWindow = wm.getMostRecentWindow("navigator:browser");
+    var enumerator = wm.getEnumerator("");
+    var cnt=0;
+    while(enumerator.hasMoreElements()) {
+      var win = enumerator.getNext();
+      if (win.nagioschecker) {
+//dump("win.nagioschecker._uid:"+win.nagioschecker._uid+"\n");
+        if (!this.isStopped) {        
+          if ((this.pref.one_window_only) && (!win.isFirst) && (!win.gMini)) {
+//dump(win.nagioschecker._uid+" disabled\n");
+          	win.nagioschecker.setNoData("");
+            win.nagioschecker.setIcon(win,"disabled");
+          }
+          else {
+            if (paket==null) {
+//dump(win.nagioschecker._uid+" notset\n");
+              win.nagioschecker.setNoData("notSet");
+            }
+            else {
+//dump(win.nagioschecker._uid+" updatestatus\n");
+              win.nagioschecker.updateStatus(paket,false);
+            }
+          }
         }
         else {
-          this.results=firstWin.nagioschecker.results;
-          this.updateStatus(this.results,true);
+//dump(win.nagioschecker._uid+" stop\n");
+          win.nagioschecker.setNoData("");
+          win.nagioschecker.setIcon(win,"stop");
+          win.nagioschecker.resetBehavior();
         }
       }
-
-    }
-    else {
-      this.updateAllClients(this.results);
-      
-    }
-    }
-    else {
-      this.updateAllClients(null);
+      else {
+      	
+      }
+      cnt++;
     }
 
-	},
+  },
 
   createUrl: function(server,type) {
 		var url="";
@@ -578,72 +675,19 @@ NCH.prototype = {
 	this.timeoutId = setTimeout(
 			function() {
 				if (me.isCheckingTime()) {
-					me.setIcon("loading");
-					me.parser.fetchAllData(me);
+					me.setIcon(window,"loading");
+					me.doUpdate();
+//					me.parser.fetchAllData(me,function(probs) {me.handleProblems(probs)});
 				} else {
 					me.setNextCheck();
-					me.setIcon("sleepy");
+					me.setIcon(window,"sleepy");
 				}
 			}
-			, this.update_interval*60000
+			, this.pref.refresh*60000
 		);
   },
 
-  handleProblems: function(probs) {
-	if (document) {
-		this.enumerateStatus(probs);
-		this.updateAllClients(this.results);
-		var reallyPlay=false;
-		for(var i=0;i<this.pt.length;i++) {
-			if ( 
-				((this.play_sound==1) && (this.soundBT[this.pt[i]]) && (this.results[this.pt[i]][2]))
-				||
-				((this.play_sound==2) && (this.soundBT[this.pt[i]]) && (this.results[this.pt[i]][1]))
-			) {
-				reallyPlay=true;
-			}
-		}
 
-		if (reallyPlay) {
-			this.playSound(this.results);
-		}
-		this.setNextCheck();
-
-	}
-	},
-
-  updateAllClients: function(paket) {
-  
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                   .getService(Components.interfaces.nsIWindowMediator);
-    var browserWindow = wm.getMostRecentWindow("navigator:browser");
-    var enumerator = wm.getEnumerator("");
-    var cnt=0;
-    while(enumerator.hasMoreElements()) {
-      var win = enumerator.getNext();
-      if (win.nagioschecker) {
-        if (!this.isStopped) {        
-          if ((this.one_window_only) && (cnt>0)) {
-          	win.nagioschecker.setNoData("");
-            win.nagioschecker.setIcon("disabled");
-          }
-          else {
-            if (paket==null) {
-              win.nagioschecker.setNoData("noProblem");
-            }
-            else {
-              win.nagioschecker.updateStatus(paket,false);
-            }
-          }
-        }
-        else {
-          win.nagioschecker.setNoData("");
-          win.nagioschecker.setIcon("stop");
-        }
-      }
-      cnt++;
-    }
-  },
 
   observe : function(subject, topic, data) {
   	if (topic == "nagioschecker:preferences-changed") {
@@ -671,147 +715,12 @@ NCH.prototype = {
 	   		}
   },
 
-  popupOpened: function() {
-    this.resetTooltips(false);
-  },
-  popupClosed: function() {
-    this.resetTooltips(true);
-  },
-
-
-  hideNchPopup: function(popupId,event) {
-//	    document.getElementById('pokusinfo4').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
-	if (
-		((event.originalTarget.id=="pokuspanel"))
-		&&
-		((event.currentTarget.id=="pokuspanel"))
-		&&
-		(this.popened)
-		&&
-/*		
-		((!this.pover)
-		||
-		((event.explicitOriginalTarget.id=="nagioschecker-popup") && (this.pover)))
-		*/ 
-		
-		(event.explicitOriginalTarget.id!="nagioschecker-popup")
-		&&
-		(event.explicitOriginalTarget.id!="pokusinfo")
-		&&
-		(event.explicitOriginalTarget.id!="pokusinfo2")
-		&&
-		(event.explicitOriginalTarget.id!="pokusinfo3")
-		&&
-		(event.explicitOriginalTarget.id!="pokusinfo4")
-		&&
-		(event.explicitOriginalTarget.id!="pokusinfo5")
-		&&
-		(event.explicitOriginalTarget.id!="pokus1")
-		&&
-		(event.explicitOriginalTarget.id!="pokus2")
-		 
-		)
-		 {
-//	    document.getElementById('pokusinfo').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
+  hideNchPopup: function(popupId) {
 		document.getElementById(popupId).hidePopup();
-			  this.popened=false;
-			  this.pover=false;
-
-/*
-	var _this=this;
-	 gHidePopupTimer = setTimeout(function() {
-		document.getElementById(popupId).hidePopup();
-			  _this.popened=false;
-	 }, 100);
-*/	 
-	}
-
-
   },
-  hideNchPopup2: function(popupId,event) {
-	    document.getElementById('pokusinfo4').value="P:"+event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id+":"+((event.relatedTarget) ? event.relatedTarget.id : "NULL" );
-
-	if (
-		(event.target.id=="nagioschecker-popup")
-		&&
-		(event.originalTarget.id=="nagioschecker-popup")
-		&&
-		(event.explicitOriginalTarget.id=="nagioschecker-popup")
-		&&
-		(event.currentTarget.id=="nagioschecker-popup")
-		&&
-		(event.relatedTarget) &&
-		(
-		(event.relatedTarget.id!="nagioschecker-popup")
-		 )
-		)
-		 {
-  
-//	    document.getElementById('pokusinfo').value="P:"+event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
-		document.getElementById(popupId).hidePopup();
-			  this.popened=false;
-			  this.pover=false;
-
-/*
-	var _this=this;
-	 gHidePopupTimer = setTimeout(function() {
-		document.getElementById(popupId).hidePopup();
-			  _this.popened=false;
-	 }, 100);
-*/	 
-	}
- return true;
-   },
-  pover:false,
-  cancelShow: function() {
-    if (gPopupTimer) {
-        clearTimeout(gPopupTimer);
-    }
-    gPopupTimer = 0;
-	},
-cancelHide: function() {
-    if (gHidePopupTimer) {
-        clearTimeout(gHidePopupTimer);
-        gHidePopupTimer = null;
-    }
-},	
-  popened:false,
-  showNchPopup: function(miniElem, event, popupId) {	
-//	    document.getElementById('pokusinfo4').value=event.type+":"+event.originalTarget.id+":"+event.target.id+":"+event.explicitOriginalTarget.id+":"+event.currentTarget.id;
-
-// event.stopPropagation();
-/*
-   if (!event.relatedTarget) {
-        // we somehow got to this button from the outside
-        // ignore
-        return;
-    }
-
-    **/
-//         if (this.popened) return true;
-	if ((event.explicitOriginalTarget.id=="pokuspanel") 
-	&&
-	(!this.popened))
-	{
-/*
-	  		var _this = this;
-		    gPopupTimer = setTimeout(function() {
-			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
-			  _this.popened=true;
-		    }, 500);
-*/
-			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
-			  this.popened=true;
-
-//			  document.getElementById(popupId).showPopup(miniElem,  -1, -1, 'popup', 'topright' , 'bottomright');
-}
- return true;
-  },
-
-
 
   statusBarOnClick: function(event,what) {
-    if ((event.button==0) && (this.oneclick)) {
+    if ((event.button==0) && (this.pref.click)) {
       this.openAllTabs(what);
     }
   },
@@ -888,7 +797,8 @@ cancelHide: function() {
 
 
   enumerateStatus: function(problems) {
-	var paket = new NCHPaket(this.showColInfo,this.showColAlias);
+
+	var paket = new NCHPaket(this.pref);
 
     var newProblems={};
     for(var i=0;i<problems.length;i++) {
@@ -900,6 +810,7 @@ cancelHide: function() {
         var st = null;
 		var isNotUp = {};
 		var isAck = {};
+		    var isSched = {};
 
 		for(var x=0;x<this.pt.length;x++) {
 		
@@ -916,32 +827,66 @@ cancelHide: function() {
 				st=this.pt[x];
 
 				for (var j =0;j<probls.length;j++) {
+					if (
+						 (!this.filterOutAll[st])
+					    &&
+						 ((!probls[j].acknowledged) || ((probls[j].acknowledged) && (!this.pref.filter_out_acknowledged))) 
+					    &&
+					    ((!probls[j].dischecks) || ((probls[j].dischecks) && (!this.pref.filter_out_disabled_checks))) 
+					    &&
+					    ((!probls[j].disnotifs) || ((probls[j].disnotifs) && (!this.pref.filter_out_disabled_notifications)))
+					    &&
+					    ((!this.pref.filter_out_downtime) || ((this.pref.filter_out_downtime) && 
+					            (
+					    		((!probls[j].service) && (!probls[j].downtime))
+				    			|| 
+					    		((probls[j].service) && (!probls[j].downtime) && (!isSched[probls[j].host]))
+					    		)))
 
-					if  (
-						(!this.filterOutAll[st])
 					    &&
-						((!probls[j].acknowledged) || ((probls[j].acknowledged) && (!this.filterOutAck))) 
+					    ((!probls[j].flapping) || ((probls[j].flapping) && (!this.pref.filter_out_flapping)))
+    			    	 &&
+		    			 ((!probls[j].isSoft) || ((probls[j].isSoft) && ((!this.pref.filter_out_soft_states) || (isNotUp[probls[j].host]))))
 					    &&
-					    ((!probls[j].dischecks) || ((probls[j].dischecks) && (!this.filterOutDisChe))) 
+					    ((!this.pref.filter_out_services_on_down_hosts) || ((this.pref.filter_out_services_on_down_hosts) && ((!probls[j].service) || ((probls[j].service) && (!isNotUp[probls[j].host])))))
 					    &&
-					    ((!probls[j].disnotifs) || ((probls[j].disnotifs) && (!this.filterOutDisNot)))
+					    ((!this.pref.filter_out_services_on_acknowledged_hosts) || ((this.pref.filter_out_services_on_acknowledged_hosts) && ((!probls[j].service) || ((probls[j].service) && (!isAck[probls[j].host])))))
 					    &&
-					    ((!probls[j].downtime) || ((probls[j].downtime) && (!this.filterOutDowntime)))
-    			    	&&
-		    			((!probls[j].isSoft) || ((probls[j].isSoft) && ((!this.filterOutSoftStat) || (isNotUp[probls[j].host]))))
+					    ((!this.pref.filter_out_regexp_hosts) || ((this.pref.filter_out_regexp_hosts) && (probls[j].host) &&  (((!this.pref.filter_out_regexp_hosts_reverse) && (!probls[j].host.match(new RegExp(this.pref.filter_out_regexp_hosts_value)))) || ((this.pref.filter_out_regexp_hosts_reverse) && (probls[j].host.match(new RegExp(this.pref.filter_out_regexp_hosts_value)))))))
 					    &&
-					    ((!this.filterOutServOnDown) || ((this.filterOutServOnDown) && ((!probls[j].service) || ((probls[j].service) && (!isNotUp[probls[j].host])))))
-					    &&
-					    ((!this.filterOutServOnAck) || ((this.filterOutServOnAck) && ((!probls[j].service) || ((probls[j].service) && (!isAck[probls[j].host])))))
-					    &&
-					    ((!this.filterOutREHosts) || ((this.filterOutREHosts) && (!probls[j].host.match(new RegExp(this.filterOutREHostsValue)))))
-					    &&
-					    ((!this.filterOutREServices) || ((this.filterOutREServices) && (!probls[j].service.match(new RegExp(this.filterOutREServicesValue)))))
+					    (
+					    	(!this.pref.filter_out_regexp_services)
+					    	||
+					    	(
+					    		(this.pref.filter_out_regexp_services)
+					    		&&
+					    		(
+					    			(!probls[j].service)
+					    			||
+						    		(
+						    			(probls[j].service)
+							    		&&
+							    		(
+							    			(
+							    				(!this.pref.filter_out_regexp_services_reverse)
+							    				&&
+							    				(!probls[j].service.match(new RegExp(this.pref.filter_out_regexp_services_value)))
+							    			)
+							    			||
+							    			(
+							    				(this.pref.filter_out_regexp_services_reverse)
+							    				&&
+							    				(probls[j].service.match(new RegExp(this.pref.filter_out_regexp_services_value)))
+							    			)
+							    		)
+							    	)
+							    )
+						    )
+					    )
 					    ) {
-
-						var uniq = this._servers[i].name+"-"+probls[j].host+"-"+probls[j].service+"-"+probls[j].status;
-						newProblems[uniq]=probls[j];
-						paket.addProblem(i,this.pt[x],this.oldProblems[uniq],probls[j],this._servers[i].aliases[probls[j].host]);
+							var uniq = this._servers[i].name+"-"+probls[j].host+"-"+probls[j].service+"-"+probls[j].status;
+							newProblems[uniq]=probls[j];
+							paket.addProblem(i,this.pt[x],this.oldProblems[uniq],probls[j],this._servers[i].aliases[probls[j].host]);
 				    }
 					if ((this.pt[x]=="down") || (this.pt[x]=="unreachable")) {
 						isNotUp[probls[j].host]=true;
@@ -951,10 +896,7 @@ cancelHide: function() {
 				    }
 			    }
 			}
-          
-
-
-		    }
+	    }
     }
 
     this.oldProblems=newProblems;
@@ -963,115 +905,143 @@ cancelHide: function() {
   },
 
 
-  resetBehavior: function(isAny) {
+  resetBehavior: function() {
+
+	var alertCount = (this.results['all']) ? this.results['all'][1] : 0;
+
+//dump(window.nagioschecker._uid+' RESETBEHAVIOR:'+alertCount+'\n');
+
     var fld = {
               "down":document.getElementById('nagioschecker-hosts-down'),
-            	"unreachable": document.getElementById('nagioschecker-hosts-unreachable'),
+              "unreachable": document.getElementById('nagioschecker-hosts-unreachable'),
   	          "unknown": document.getElementById('nagioschecker-services-unknown'),
   	          "warning": document.getElementById('nagioschecker-services-warning'),
   	          "critical": document.getElementById('nagioschecker-services-critical')
               };
+    if (gMini) {
+		this.adjustSize(null,true);
+    }
 
     var mainPanel=document.getElementById('nagioschecker-panel');
+    var mainPopup=document.getElementById('nagioschecker-popup');
 
-    switch (this.oneclick) {
+    switch (this.pref.click) {
 		  case 1:
 			  mainPanel.setAttribute("onclick","nagioschecker.statusBarOnClick(event,'main');");
 			  break;
 		  case 3:
-//		  	mainPanel.setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
-//		  	mainPanel.setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
-//		  	mainPanel.setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
-//		  	mainPanel.setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
+			if (!this.isStopped) {
 
-        for (var pType in fld) {
-//		  	fld[pType].setAttribute("onmouseover","nagioschecker.showNchPopup(this,event,'nagioschecker-popup');");
-//		  	fld[pType].setAttribute("onmouseout","nagioschecker.hideNchPopup('nagioschecker-popup');");
-//		  	fld[pType].setAttribute("onmousemove","var _event = new Object(); _event.relatedTarget = true; nagioschecker.showNchPopup(this,_event,'nagioschecker-popup');");
-        }
+			if (this.pref.info_type==6) {
+				var ico = document.getElementById('nagioschecker-img');
+				ico.addEventListener('click',nagioschecker.handleMouseClick,false);
+				ico.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+				ico.relatedTarget='nagioschecker-popup';
+			}
 
+				mainPanel.addEventListener('click',nagioschecker.handleMouseClick,false);
+		  mainPanel.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+		  mainPanel.relatedPopup='nagioschecker-popup';
+
+			}
+			else {
+			  	mainPanel.setAttribute("onclick","void(0);");
+			}
 			  break;
 		  default:
-	  		mainPanel.removeAttribute("onclick");
+			  	mainPanel.setAttribute("onclick","void(0);");
 			  break;		
 	  }
-
-	  if (this.oneclick>0) {
-			mainPanel.setAttribute("style","cursor:pointer");
-      for (var pType in fld) {
-        fld[pType].setAttribute("style","cursor:pointer");
-      }
+	  if (this.pref.click>0) {
+		mainPanel.setAttribute("style","cursor:pointer");
+    	for (var pType in fld) {
+	      fld[pType].setAttribute("style","cursor:pointer");
+	    }
 	  }
 
-	  if (this.oneclick==2){
-      for (var pType in fld) {
-        fld[pType].setAttribute("style","cursor:pointer");
-      }
-  	  fld["down"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'hosts');");
-  	  fld["unreachable"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'hosts');");
-  	  fld["unknown"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'services');");
-  	  fld["warning"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'services');");
-  	  fld["critical"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'services');");
+	  if (this.pref.click==2){
+	      for (var pType in fld) {
+	        fld[pType].setAttribute("style","cursor:pointer");
+	      }
+	  	  fld["down"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'hosts');");
+	  	  fld["unreachable"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'hosts');");
+	  	  fld["unknown"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'services');");
+	  	  fld["warning"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'services');");
+	  	  fld["critical"].setAttribute("onclick","nagioschecker.statusBarOnClick(event,'services');");
 	  }
 	  else {
-      if (this.oneclick==4) {
-        for (var pType in fld) {
-          fld[pType].setAttribute("style","cursor:pointer");
-    	    fld[pType].setAttribute("onclick","nagioschecker.showNchPopup(this,event,'nagioschecker-popup-"+pType+"');");
-        }
-      }
-      else {
-        for (var pType in fld) {
-          fld[pType].removeAttribute("onclick");
-        }
-      }
+	      if ((this.pref.click==4) && (!this.isStopped)) {
+
+			if (this.pref.info_type==6) {
+				var ico = document.getElementById('nagioschecker-img');
+				ico.addEventListener('click',nagioschecker.handleMouseClick,false);
+				ico.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+				ico.relatedTarget='nagioschecker-popup';
+			}
+			else {
+	    	    for (var pType in fld) {
+		          fld[pType].setAttribute("style","cursor:pointer");
+
+				  var pop = document.getElementById('nagioschecker-popup-'+pType);
+				  pop.addEventListener('mouseover',nagioschecker.handleMouseOver,false);
+				  pop.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+	
+				  fld[pType].addEventListener('click',nagioschecker.handleMouseClick,false);
+				  fld[pType].addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+				  fld[pType].relatedTarget='nagioschecker-popup-'+pType;
+
+		        }
+			}
+	      }
+	      else {
+	        for (var pType in fld) {
+			  	fld[pType].setAttribute("onclick","void(0);");
+
+
+	        }
+	      }
 	  }
 
-    this.resetTooltips(isAny);
 
-  },
+	mainPopup.addEventListener('mouseover',nagioschecker.handleMouseOver,false);
+	mainPopup.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
 
-  resetTooltips: function(isAny) {
-/*
-    var fld = {
-              "down":document.getElementById('nagioschecker-hosts-down'),
-            	"unreachable": document.getElementById('nagioschecker-hosts-unreachable'),
-  	          "unknown": document.getElementById('nagioschecker-services-unknown'),
-  	          "warning": document.getElementById('nagioschecker-services-warning'),
-  	          "critical": document.getElementById('nagioschecker-services-critical')
-              };
-    var mainPanel=document.getElementById('nagioschecker-panel');
+	  mainPanel.removeEventListener('mouseover',nagioschecker.handleMouseOver,false);
+	  mainPanel.removeEventListener('mouseout',nagioschecker.handleMouseOut,false);
 
-
-    if ((isAny) && (this.infoWindowType>0)) {
-      if (this.infoWindowType==1) {
-//        mainPanel.setAttribute("tooltip", "nagioschecker-tooltip");
-        for (var pType in fld) {
-          fld[pType].removeAttribute("tooltip");
-        } 
+      for (var pType in fld) {
+		  var pop = document.getElementById('nagioschecker-popup-'+pType);
+		  pop.addEventListener('mouseover',nagioschecker.handleMouseOver,false);
+		  pop.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+		  fld[pType].removeEventListener('mouseover',nagioschecker.handleMouseOver,false);
+		  fld[pType].removeEventListener('mouseout',nagioschecker.handleMouseOut,false);
       }
-      else {
-  		  mainPanel.removeAttribute("tooltip");
+
+    if ((alertCount>0) && (this.pref.info_window_type>0) && (!this.isStopped) && ((!this.pref.one_window_only) || ((this.pref.one_window_only) && (this.isFirstWindow()))))  {
+      if (this.pref.info_window_type==1) {
+		  mainPanel.addEventListener('mouseover',nagioschecker.handleMouseOver,false);
+		  mainPanel.addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+		  mainPanel.relatedPopup='nagioschecker-popup';
+      }
+      else {		  
         for (var pType in fld) {
-//          fld[pType].setAttribute("tooltip", "nagioschecker-tooltip-"+pType);
+		  fld[pType].addEventListener('mouseover',nagioschecker.handleMouseOver,false);
+		  fld[pType].addEventListener('mouseout',nagioschecker.handleMouseOut,false);
+		  fld[pType].relatedTarget='nagioschecker-popup-'+pType;
         }
       }
     }
-    else {
-  	  mainPanel.removeAttribute("tooltip");
-      for (var pType in fld) {
-        fld[pType].removeAttribute("tooltip");
-      }
-    }
-*/ 
+
   },
+
 
 
   updateStatus: function(paket,firstRun) {
 
-	paket.createTooltip();
+	if (paket) paket.createTooltip(window);
 
-	this.resetBehavior(paket.isAtLeastOne());
+
+	this.resetBehavior();
 
     var fld = {
               "down":document.getElementById('nagioschecker-hosts-down'),
@@ -1088,47 +1058,57 @@ cancelHide: function() {
           "warning":["fullAlertWarning","shortAlertWarning",""],
           "critical":["fullAlertCritical","shortAlertCritical",""]
           };
-    if (this.infoType>2) {
+	if (this.pref.info_type==6) {
+		var img_cls = "";
+		if (paket.countProblemsByType("warning")>0) img_cls = "nagioschecker-warning-image";
+		if (paket.countProblemsByType("unknown")>0) img_cls = "nagioschecker-unknown-image";
+		if (paket.countProblemsByType("critical")>0) img_cls = "nagioschecker-critical-image";
+		if (paket.countProblemsByType("unreachable")>0) img_cls = "nagioschecker-unreachable-image";
+		if (paket.countProblemsByType("down")>0) img_cls = "nagioschecker-down-image";
+		document.getElementById('nagioschecker-img').setAttribute("class",img_cls);
+	}
+    else if (this.pref.info_type>2) {
       for (var pType in fld) {
         var x = "";
         var pbt = paket.getProblemsByType(pType);
         for (var i = 0; i < pbt.length; i++) {
           if (pbt[i]>0) {
-              x+=((x) ? " + " : "")+((this.infoType<5) ? this._servers[i].name+' ' : '')+pbt[i];
+              x+=((x) ? " + " : "")+((this.pref.info_type<5) ? this._servers[i].name+' ' : '')+pbt[i];
           }
         }
     	  fld[pType].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType(pType),infoTypes[pType][(this.infoType==3) ? 1 : 2],x));
       }
+		document.getElementById('nagioschecker-img').setAttribute("class","");
 
     }
     else {
-    	fld["down"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("down"),infoTypes["down"][this.infoType],""));
-  	  fld["unreachable"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("unreachable"),infoTypes["unreachable"][this.infoType],""));
-		  fld["unknown"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("unknown"),infoTypes["unknown"][this.infoType],""));
-		  fld["warning"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("warning"),infoTypes["warning"][this.infoType],""));
-		  fld["critical"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("critical"),infoTypes["critical"][this.infoType],""));
+    	fld["down"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("down"),infoTypes["down"][this.pref.info_type],""));
+  	  fld["unreachable"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("unreachable"),infoTypes["unreachable"][this.pref.info_type],""));
+		  fld["unknown"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("unknown"),infoTypes["unknown"][this.pref.info_type],""));
+		  fld["warning"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("warning"),infoTypes["warning"][this.pref.info_type],""));
+		  fld["critical"].setAttribute("value", this.getCorrectBundleString(paket.countProblemsByType("critical"),infoTypes["critical"][this.pref.info_type],""));
+		document.getElementById('nagioschecker-img').setAttribute("class","");
     }
 
-    fld["down"].setAttribute("hidden", (((paket.countProblemsByType("down")==0) || (!this.showSb["down"])) ? "true" : "false"));
-    fld["unreachable"].setAttribute("hidden", (((paket.countProblemsByType("unreachable")==0) || (!this.showSb["unreachable"])) ? "true" : "false"));
-    fld["unknown"].setAttribute("hidden", (((paket.countProblemsByType("unknown")==0) || (!this.showSb["unknown"])) ? "true" : "false"));
-    fld["warning"].setAttribute("hidden", (((paket.countProblemsByType("warning")==0) || (!this.showSb["warning"])) ? "true" : "false"));
-    fld["critical"].setAttribute("hidden", (((paket.countProblemsByType("critical")==0) || (!this.showSb["critical"])) ? "true" : "false"));
+    fld["down"].setAttribute("hidden", (((paket.countProblemsByType("down")==0) || (!this.showSb["down"]) || (this.pref.info_type==6)) ? "true" : "false"));
+    fld["unreachable"].setAttribute("hidden", (((paket.countProblemsByType("unreachable")==0) || (!this.showSb["unreachable"]) || (this.pref.info_type==6)) ? "true" : "false"));
+    fld["unknown"].setAttribute("hidden", (((paket.countProblemsByType("unknown")==0) || (!this.showSb["unknown"]) || (this.pref.info_type==6)) ? "true" : "false"));
+    fld["warning"].setAttribute("hidden", (((paket.countProblemsByType("warning")==0) || (!this.showSb["warning"]) || (this.pref.info_type==6)) ? "true" : "false"));
+    fld["critical"].setAttribute("hidden", (((paket.countProblemsByType("critical")==0) || (!this.showSb["critical"]) || (this.pref.info_type==6)) ? "true" : "false"));
 
     document.getElementById('nagioschecker-info-label').setAttribute("hidden", "true");
 
     this.setLoading(false);
-
 
     if (paket.countProblemsByType("all")>0) {
 
       var whichBlink = {};      
 
       for (var pType in fld) {
-        whichBlink[pType]=((paket.countOldProblemsByType(pType)>0) || (this.blinking==2)) ? true : false;
+        whichBlink[pType]=((paket.countOldProblemsByType(pType)>0) || (this.pref.blinking==2)) ? true : false;
       }
 
-      if ((this.blinking==3) || (this.blinking==2) || ((this.blinking==1) && (paket.countOldProblemsByType("all")>0)) && (!firstRun)){
+      if ((this.pref.blinking==3) || (this.pref.blinking==2) || ((this.pref.blinking==1) && (paket.countOldProblemsByType("all")>0)) && (!firstRun)){
         this.blinkLabel(12,whichBlink);
       }
     }
@@ -1137,9 +1117,16 @@ cancelHide: function() {
         this.setNoData("error");
       }
       else {
-        this.setNoData("noProblem");
+        this.setNoData((this._serversEnabled>0) ? "noProblem" : "notSet");
       }
     }
+    
+    if (gMini) {
+      this.adjustSize(null,false);  
+//		sizeToContent();
+    }
+    
+    
   },
 
 
@@ -1175,7 +1162,7 @@ cancelHide: function() {
      }
   }
   catch (e) {
-    alert(e);
+    dump(e);
   }
   },
 
@@ -1183,15 +1170,14 @@ cancelHide: function() {
 
  playSound: function(paket) {
 	var wav = null;
-	
 	if (paket.countProblemsByType("down")>0) {
-		wav = this.sndDown;
+		wav = this.pref.sound_down_path;
 	}
 	else if (paket.countProblemsByType("critical")>0) {
-		wav = this.sndCritical;
+		wav = this.pref.sound_critical_path;
 	}
 	else if (paket.countProblemsByType("warning")>0) {
-		wav = this.sndWarning;
+		wav = this.pref.sound_warning_path;
 	}
 	if (wav!=null) {
     try {
@@ -1201,56 +1187,84 @@ cancelHide: function() {
       sound.play(soundUri);
     }
     catch(e) {
-      alert(e);
+		dump(e);
     }
 	}
   },
 
  setNoData: function(type) {
-  this.setLoading(false);
+	this.setLoading(false);
  	document.getElementById('nagioschecker-hosts-down').setAttribute("hidden", "true");
  	document.getElementById('nagioschecker-hosts-unreachable').setAttribute("hidden", "true");
  	document.getElementById('nagioschecker-services-unknown').setAttribute("hidden", "true");
  	document.getElementById('nagioschecker-services-warning').setAttribute("hidden", "true");
  	document.getElementById('nagioschecker-services-critical').setAttribute("hidden", "true");
 
-  if (type) {
-    var infoLabel = document.getElementById('nagioschecker-info-label');
-    infoLabel.setAttribute("hidden", "false");
-    if (type=="noProblem") {
-      infoLabel.setAttribute("class", "nagioschecker-allok-value");
-      infoLabel.removeAttribute("tooltip");
+	if (type) {
+    	var infoLabel = document.getElementById('nagioschecker-info-label');
+	    infoLabel.setAttribute("hidden", "false");
+    	if (type=="notSet") {
+			infoLabel.setAttribute("class", "nagioschecker-notset-value");
+      		infoLabel.removeAttribute("tooltip");
       
-      var ico = document.getElementById('nagioschecker-img');
-      ico.removeAttribute("tooltip");
+      		var ico = document.getElementById('nagioschecker-img');
+      		ico.removeAttribute("tooltip");
 
-    var mainPanel=document.getElementById('nagioschecker-panel');
-    mainPanel.removeAttribute("onclick");
+      		var mainPanel=document.getElementById('nagioschecker-panel');
+      		mainPanel.removeAttribute("onclick");
 
-		 if ((this.infoType==2) || (this.infoType==5)) {
-	    infoLabel.setAttribute("value"," 0 ");
-		 }
-		 else {
-	    infoLabel.setAttribute("value",nagioschecker.bundle.getString(type));
-		 }
-    }
-	 else {
-	    infoLabel.setAttribute("value",(type) ? nagioschecker.bundle.getString(type) : "");
-	 }
-  }
+    		infoLabel.setAttribute("value",nagioschecker.bundle.getString(type));
+    	
+    	}
+    	else if (type=="noProblem") {
+
+      		var ico = document.getElementById('nagioschecker-img');
+      		ico.removeAttribute("tooltip");
+
+      		var mainPanel=document.getElementById('nagioschecker-panel');
+      		mainPanel.removeAttribute("onclick");
+
+	  		if (this.pref.info_type==6) {
+				ico.setAttribute("class","nagioschecker-allok-image");
+	    		infoLabel.setAttribute("hidden", "true");
+	  		}
+	  		else {
+	      		infoLabel.setAttribute("class", "nagioschecker-allok-value");
+	      		infoLabel.removeAttribute("tooltip");
+		  		if ((this.pref.info_type==2) || (this.pref.info_type==5)) {
+		    		infoLabel.setAttribute("value"," 0 ");
+		  		}
+		  		else {
+		    		infoLabel.setAttribute("value",nagioschecker.bundle.getString(type));
+		  		}
+	  		}
+    	}
+		else {
+	  		if (type=="error") {
+	  			infoLabel.setAttribute("class", "nagioschecker-notset-value");
+	  		}
+	  		infoLabel.setAttribute("value",(type) ? nagioschecker.bundle.getString(type) : "");
+		}
+  	}
  },
 
   setLoading: function(loading) {
-    if (loading) {
-      this.setIcon("loading");
-    } else {
-      this.setIcon("nagios");
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+    var browserWindow = wm.getMostRecentWindow("navigator:browser");
+    var enumerator = wm.getEnumerator("");
+    while(enumerator.hasMoreElements()) {
+      var win = enumerator.getNext();
+      if (win.nagioschecker) {
+			win.nagioschecker.setIcon(window,(loading) ? "loading" : ((win.nagioschecker.isStopped) ? "stop" : "nagios"));
+			win.nagioschecker.resetBehavior();
+      }
     }
   },
 
-  setIcon: function(type) {
-
-    var ico = document.getElementById('nagioschecker-img');
+  setIcon: function(w,type) {
+    var ico = w.document.getElementById('nagioschecker-img');
+	if (type!="nagios") ico.setAttribute("class","");
 	switch (type) {
 		case "loading":
 			ico.setAttribute("src","chrome://nagioschecker/skin/Throbber.gif");
@@ -1273,6 +1287,8 @@ cancelHide: function() {
 		    ico.setAttribute("tooltiptext",nagioschecker.bundle.getString("stoppedRun"));
 			break;
 	}
+
+
   },
 
   // retrive actual time and workingtime then calculate whether or not check Nagios status
@@ -1289,39 +1305,119 @@ cancelHide: function() {
 
 	bRet = (now > this.worktime_from) && (now < this.worktime_to);
 	return bRet;
-  }
+  },
+  
+	loadPref: function(branch,conf) {
+		var result = {};
+		for (var i in conf) {
+			try {
+				switch (conf[i][0]) {
+					case 'int':
+						result[i] = this.preferences.getIntPref(branch+i);
+						break;
+					case 'bool':
+						result[i] = this.preferences.getBoolPref(branch+i);
+						break;
+					case 'char':
+						result[i] = this.preferences.getCharPref(branch+i);
+						if ((result[i]=='') && (conf[i][1]!='')) {
+							result[i]=conf[i][1];
+						}
+						break;
+				}
+	      }
+	      catch(e) {
+				result[i] = conf[i][1];
+	      }
+		}
+		return result;
+	}
 
 }
 
 
-function NCHToolTip(showColInfo,showColAlias) {
+//function NCHToolTip(showColInfo,showColAlias,showColFlags) {
+function NCHToolTip(pref) {
   this._rows=null;
   this.title=title;
   this._vbox=null;
   this.headers = [];
-  this.showColInfo=showColInfo;
-  this.showColAlias=showColAlias;
+  this.pref = pref;
+//  this.showColInfo=showColInfo;
+//  this.showColAlias=showColAlias;
+//  this.showColFlags=showColFlags;
 	this.actH=-1;
+
   this.create = function(from) {
     this._tooltip=from;
 
-
     var doc=document;
-
     while (this._tooltip.childNodes.length > 0) this._tooltip.removeChild(this._tooltip.childNodes[0]);
     this._tooltip.removeAttribute("title");
     this._tooltip.removeAttribute("label");
 
     if (doc) {
 
-    var ph=window.screen.height-300;
-    ph=(ph<500) ? 500 : ph;
-
     this._vbox = doc.createElement("vbox");
-    this._vbox.setAttribute("style","overflow: auto");
 
+
+    var ph=window.screen.height-300;
+    ph=(ph<300) ? 300 : ph;
+//    ph=300;
+	this._tooltip.setAttribute("maxheight",ph+"px");
+
+    var pw=window.screen.width-100;
+    pw=(pw<500) ? 500 : pw;
+	this._tooltip.setAttribute("minwidth","500px");
+	this._tooltip.setAttribute("maxwidth",(window.screen.width-100)+"px");
+
+
+//    this._vbox.setAttribute("style","overflow: -moz-scrollbars-vertical;");
+    this._vbox.setAttribute("flex","1");
+   this._vbox.setAttribute("style","overflow: scroll;");
+//    this._vbox.setAttribute("id",from.id+'-id');
 		var grid = doc.createElement("grid");
 		this._vbox.appendChild(grid);
+		var cls = doc.createElement("columns");
+		grid.appendChild(cls);
+		var cl = doc.createElement("column");
+		cls.appendChild(cl);
+		var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+		cls.appendChild(cl);
+	if (this.pref.show_window_column_alias) {
+//    if (this.showColAlias) {
+		var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+		cls.appendChild(cl);
+    }
+		var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+		cls.appendChild(cl);
+		if (this.pref.show_window_column_flags) {
+//if (this.showColFlags) {		
+			var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+			cls.appendChild(cl);
+		}
+		var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+		cls.appendChild(cl);
+		var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+		cls.appendChild(cl);
+		var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+		cls.appendChild(cl);
+		if (this.pref.show_window_column_information) {
+//    if (this.showColInfo) {
+			var cl = doc.createElement("column");
+//		cl.setAttribute("flex","1");
+			cl.setAttribute("style","max-width:20px;");
+
+
+		cls.appendChild(cl);
+    	}
 		this._rows = doc.createElement("rows");
 		grid.appendChild(this._rows);
 
@@ -1330,39 +1426,57 @@ function NCHToolTip(showColInfo,showColAlias) {
 
 		var lNew = doc.createElement("label");
 		lNew.setAttribute("value", "");
+		
 		row.appendChild(lNew);
 
 		var lHost = doc.createElement("label");
 		lHost.setAttribute("value", nagioschecker.bundle.getString("host"));
 		row.appendChild(lHost);
 
-    if (this.showColAlias) {
-		var lAlias = doc.createElement("label");
-		lAlias.setAttribute("value", nagioschecker.bundle.getString("hostAlias"));
+//    if (this.showColAlias) {
+		if (this.pref.show_window_column_alias) {
+			var lAlias = doc.createElement("label");
+			lAlias.setAttribute("value", nagioschecker.bundle.getString("hostAlias"));
 //		lAlias.setAttribute("maxwidth", "50px");
-		row.appendChild(lAlias);
-	}
+			row.appendChild(lAlias);
+		}
  		var lServ = doc.createElement("label");
 	  lServ.setAttribute("value", nagioschecker.bundle.getString("service"));
 	  row.appendChild(lServ);
 
-		var lStat = doc.createElement("label");
-		lStat.setAttribute("value", nagioschecker.bundle.getString("status"));
-		row.appendChild(lStat);
-
+//    if (this.showColFlags) {
+		if (this.pref.show_window_column_flags) {
+ 			var lFlags = doc.createElement("label");
+			  lFlags.setAttribute("value", nagioschecker.bundle.getString("flags"));
+			  row.appendChild(lFlags);
+	    }
+		if (this.pref.show_window_column_attempt) {
+	 		var lAttempt = doc.createElement("label");
+		  lAttempt.setAttribute("value", nagioschecker.bundle.getString("attempt"));
+		  row.appendChild(lAttempt);
+		}
+		if (this.pref.show_window_column_status) {
+			var lStat = doc.createElement("label");
+			lStat.setAttribute("value", nagioschecker.bundle.getString("status"));
+			row.appendChild(lStat);
+		}
 		var lTime = doc.createElement("label");
 		lTime.setAttribute("value", nagioschecker.bundle.getString("duration"));
 		row.appendChild(lTime);
 
-    if (this.showColInfo) {
-		var lInfo = doc.createElement("label");
-		lInfo.setAttribute("value", nagioschecker.bundle.getString("information"));
-		row.appendChild(lInfo);
-    }
+		if (this.pref.show_window_column_information) {
+//    if (this.showColInfo) {
+			var lInfo = doc.createElement("label");
+			lInfo.setAttribute("value", nagioschecker.bundle.getString("information"));
+			row.appendChild(lInfo);
+    	}
+
+		this._tooltip.appendChild(this._vbox);
+
 
 	 for(var i = 0;i<this.headers.length;i++) {
     	if ((this.headers[i].problems.length) || (this.headers[i].error)) {
-			this.createHeader(this.headers[i].data,this.headers[i].time);  
+			this.createHeader(i,this.headers[i].data,this.headers[i].time);  
         	if (!this.headers[i].error) {
 
 	  			this.headers[i].problems.sort(function (a,b) {
@@ -1380,20 +1494,22 @@ function NCHToolTip(showColInfo,showColAlias) {
     }
 
 
-		this._tooltip.appendChild(this._vbox);
-    this._tooltip.setAttribute("style","max-height:"+ph+"px;");
 
 
+//    this._tooltip.setAttribute("style","max-height:"+ph+"px;");
+     
 	  }
 
 
 
   }
-  this.createHeader= function(name,time) {
+  this.createHeader= function(pos,name,time) {
 
     var doc=document;
 
     if (doc) {
+		
+
 		var separator = doc.createElement("separator");
 		separator.setAttribute("class", "groove-thin");
 		this._rows.appendChild(separator);
@@ -1403,19 +1519,16 @@ function NCHToolTip(showColInfo,showColAlias) {
 
     var description = doc.createElement("description");
 		description.setAttribute("class", "nagioschecker-tooltip-title");
-		description.setAttribute("value",name);
+		description.setAttribute("value",name+((time!=null) ? " ("+time.toLocaleString()+")" : ""));
 		hbd.appendChild(description);
     var sp = doc.createElement("spacer");
 		sp.setAttribute("flex", "1");
 		hbd.appendChild(sp);
-    var description2 = doc.createElement("description");
-		description2.setAttribute("class", "nagioschecker-tooltip-title-date");
-		description2.setAttribute("value",(time!=null) ? time.toLocaleString() : "");
-		hbd.appendChild(description2);
 
 		var separator = doc.createElement("separator");
 		separator.setAttribute("class", "groove-thin");
 		this._rows.appendChild(separator);
+
     }
 
   }
@@ -1425,10 +1538,14 @@ function NCHToolTip(showColInfo,showColAlias) {
 
 		var row = document.createElement("row");
  		this._rows.appendChild(row);
+
+	    var hbd = doc.createElement("hbox");
+		this._rows.appendChild(hbd);
+
 		var lErr = document.createElement("label");
 		lErr.setAttribute("class","error");
 		lErr.setAttribute("value", nagioschecker.bundle.getString("downloadError"));
-		row.appendChild(lErr);
+		hbd.appendChild(lErr);
 
 
 
@@ -1449,8 +1566,9 @@ function NCHToolTip(showColInfo,showColAlias) {
 
   
   this.createRow = function(problem,i,serPo) {
-
-		var row = document.createElement("row");
+		
+	var row = document.createElement("row");
+		
     var status_text = "";
     switch (problem.status) {
       case "down":
@@ -1500,64 +1618,146 @@ function NCHToolTip(showColInfo,showColAlias) {
 
 
 
-    if (this.showColAlias) {
-		var lAlias = document.createElement("label");
+		if (this.pref.show_window_column_alias) {
+//    if (this.showColAlias) {
+			var lAlias = document.createElement("label");
 
-		lAlias.setAttribute("value", (this.headers[i].aliases[problem.host]) ? this.headers[i].aliases[problem.host] : "-");
+			lAlias.setAttribute("value", (this.headers[i].aliases[problem.host]) ? this.headers[i].aliases[problem.host] : "-");
 			row.appendChild(lAlias);
-	}
+		}
 		var lServ = document.createElement("label");
 		lServ.setAttribute("value", (problem.service==null) ? "-" : problem.service);
 		row.appendChild(lServ);
 
+		if (this.pref.show_window_column_flags) {
+		var flags="";
+		if (problem.acknowledged) flags+='Ac';
+		if (problem.dischecks) flags+='Ch';
+		if (problem.disnotifs) flags+='Nt';
+		if (problem.downtime) flags+='Dw';
+		if (problem.flapping) flags+='Fl';
+		if (problem.onlypass) flags+='Pa';
+
+//    if (this.showColFlags) {
+			var lFlags = document.createElement("label");
+			lFlags.setAttribute("value", flags);
+			row.appendChild(lFlags);
+	    }
+		if (this.pref.show_window_column_attempt) {
+		var lAttempt = document.createElement("label");
+		lAttempt.setAttribute("value", problem.attempt);
+		row.appendChild(lAttempt);
+		}
+		if (this.pref.show_window_column_status) {
 		var lStat = document.createElement("label");
 		lStat.setAttribute("value", status_text);
 		row.appendChild(lStat);
-
+		}
 		var lTime = document.createElement("label");
 		lTime.setAttribute("value", problem.duration);
 		row.appendChild(lTime);
 
 
-    if (this.showColInfo) {
-		var lInfo = document.createElement("label");
-		lInfo.setAttribute("value", problem.info);
-		row.appendChild(lInfo);
-    }
+//    if (this.showColInfo) {
+		if (this.pref.show_window_column_information) {
+			var lInfo = document.createElement("label");
+			lInfo.setAttribute("value", problem.info);
+			lInfo.setAttribute("style","overflow:hidden;white-space:nowrap;");
+			row.appendChild(lInfo);
+    	}
+
+
+
+
   }
+
+
 }
 
-function NCHPaket(sci,sca) {
+//function NCHPaket(sci,sca,scf) {
+function NCHPaket(pref) {
+	this.pref = pref;
+
+/*	
 	this.showColInfo = sci;
 	this.showColAlias = sca;
+	this.showColFlags = scf;
+*/ 
 	this.pt = ["down","unreachable","unknown","warning","critical"];
-	this.all = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
-	this.down = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
-	this.unreachable = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
-	this.unknown = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
-	this.warning = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
-	this.critical = [new NCHToolTip(this.showColInfo,this.showColAlias),0,0,[],[]];
+	this.ttip = [];
+/*
+	this.all = [new NCHToolTip(this.showColInfo,this.showColAlias,this.showColFlags),0,0,[],[],0,0];
+	this.down = [new NCHToolTip(this.showColInfo,this.showColAlias,this.showColFlags),0,0,[],[]];
+	this.unreachable = [new NCHToolTip(this.showColInfo,this.showColAlias,this.showColFlags),0,0,[],[]];
+	this.unknown = [new NCHToolTip(this.showColInfo,this.showColAlias,this.showColFlags),0,0,[],[]];
+	this.warning = [new NCHToolTip(this.showColInfo,this.showColAlias,this.showColFlags),0,0,[],[]];
+	this.critical = [new NCHToolTip(this.showColInfo,this.showColAlias,this.showColFlags),0,0,[],[]];
+*/
+/*
+	this.all = [new NCHToolTip(this.pref),0,0,[],[],0,0];
+	this.down = [new NCHToolTip(this.pref),0,0,[],[]];
+	this.unreachable = [new NCHToolTip(this.pref),0,0,[],[]];
+	this.unknown = [new NCHToolTip(this.pref),0,0,[],[]];
+	this.warning = [new NCHToolTip(this.pref),0,0,[],[]];
+	this.critical = [new NCHToolTip(this.pref),0,0,[],[]];
+*/
+	this.all = [new Array(),0,0,[],[],0,0];
+	this.down = [new Array(),0,0,[],[]];
+	this.unreachable = [new Array(),0,0,[],[]];
+	this.unknown = [new Array(),0,0,[],[]];
+	this.warning = [new Array(),0,0,[],[]];
+	this.critical = [new Array(),0,0,[],[]];
+
 	this.isError = false;
+	this.sa = [null,[0,0],[0,0],[0,0]];
 	this.addTooltipHeader = function(to,header,serverPos,timeFetch) {
-	 	this[to][0].addHeader(header,serverPos,timeFetch);
+		this.ttip.push({type:'header',data:header});
+//	 	this[to][0].addHeader(header,serverPos,timeFetch);
+	 	this[to][0].push({type:'header',data:header,serverPos:serverPos,timeFetch:timeFetch});
 	}
 	this.addError = function(to) {
-		this[to][0].addError();
+//		this[to][0].addError();
 		this["isError"]=true;
+	 	this[to][0].push({type:'error'});
 	}
 	this.addProblem = function(serverPos,problemType,isOld,problem,aliasName) {
+//dump("ADDPROBLEM:"+serverPos+" "+problemType+" "+isOld+" "+problem+" "+aliasName+"\n");
+		var tmp_a = 1;
 		if (!isOld) {
+//dump("pricteno stav:"+this["all"][2]+"\n");
 			this["all"][2] = (this["all"][2]) ? this["all"][2]+1 : 1;
 			this["all"][4][serverPos] = (this["all"][4][serverPos]) ? this["all"][4][serverPos]+1 : 1;
 			this[problemType][2] = (this[problemType][2]) ? this[problemType][2]+1 : 1;
 			this[problemType][4][serverPos] = (this[problemType][4][serverPos]) ? this[problemType][4][serverPos]+1 : 1;
-		} 	
+			if (problem.attemptInt>0) {
+				tmp_a = (problem.attemptInt>3) ? 3 : problem.attemptInt;
+				if (this.sa[tmp_a]) this.sa[tmp_a][1]++;
+			}
+		}
+		if (problem.attemptInt>0) {
+			tmp_a = (problem.attemptInt>3) ? 3 : problem.attemptInt;
+			if (this.sa[tmp_a]) this.sa[tmp_a][0]++;
+		}
+		this.ttip.push({type:'problem',data:problem});
 		this[problemType][1] = (this[problemType][1]) ? this[problemType][1]+1 : 1;
 		this[problemType][3][serverPos] = (this[problemType][3][serverPos]) ? this[problemType][3][serverPos]+1 : 1;
-		this["all"][0].addRow(problem,aliasName,(!isOld));
-		this[problemType][0].addRow(problem,aliasName,(!isOld));
+//		this["all"][0].addRow(problem,aliasName,(!isOld));
+	 	this["all"][0].push({type:'problem',data:problem,aliasName:aliasName,isNew:(!isOld)});
+
+//		this[problemType][0].addRow(problem,aliasName,(!isOld));
+	 	this[problemType][0].push({type:'problem',data:problem,aliasName:aliasName,isNew:(!isOld)});
 		this["all"][1] = (this["all"][1]) ? this["all"][1]+1 : 1;
 		this["all"][3][serverPos] = (this["all"][3][serverPos]) ? this["all"][3][serverPos]+1 : 1;
+	}
+	this.checkServiceAttempt = function(value) {
+		var cntSa = 0;
+		for (var i = value; i < this.sa.length; i++) cntSa += this.sa[i][0];
+		return (cntSa==this["all"][1]);		
+	}
+	this.checkOldServiceAttempt = function(value) {
+		var cntSa = 0;
+		for (var i = value; i < this.sa.length; i++) cntSa += this.sa[i][1];
+		return (cntSa==this["all"][2]);		
 	}
 	this.getProblemsByType = function(problemType) {
 	 	return this[problemType][3];
@@ -1568,16 +1768,53 @@ function NCHPaket(sci,sca) {
 	this.countOldProblemsByType = function(problemType) {
 	 	return this[problemType][2];
 	}
-	this.createTooltip = function() {
-	    if (this["all"][0]) {
-	      this["all"][0].create(document.getElementById('nagioschecker-popup'));
-		    this["all"][0].create(document.getElementById('nagioschecker-tooltip'));
-	    }
+	this.createTooltip = function(win) {
+//dump("uid:"+win.nagioschecker._uid+"\n");
+		var doc = win.document;
+		var ttall=new NCHToolTip(this.pref);
+//dump("this.createTooltip - all\n");
 
+		for(var i in this["all"][0]) {
+			switch (this["all"][0][i]["type"]) {
+				case "header":			
+					ttall.addHeader(this["all"][0][i]["data"],this["all"][0][i]["serverPos"],this["all"][0][i]["timeFetch"]);
+					break;
+				case "error":			
+					ttall.addError();
+					break;
+				case "problem":			
+					ttall.addRow(this["all"][0][i]["data"],this["all"][0][i]["aliasName"],this["all"][0][i]["isNew"]);
+					break;
+			}
+		}
+
+        ttall.create(doc.getElementById('nagioschecker-popup'));
+/*
+	    if (this["all"][0]) {
+	    }
+ */
     	for(var i=0;i<this.pt.length;i++) {
-	      if ((this[this.pt[i]]) && (this[this.pt[i]][0])) {
-	        this[this.pt[i]][0].create(document.getElementById('nagioschecker-tooltip-'+this.pt[i]));
-	        this[this.pt[i]][0].create(document.getElementById('nagioschecker-popup-'+this.pt[i]));
+//	      if ((this[this.pt[i]]) && (this[this.pt[i]][0])) {
+	      if (this[this.pt[i]]) {
+//dump("this.createTooltip - "+this.pt[i]+"\n");
+				var ttpt=new NCHToolTip(this.pref);
+
+				for(var j in this[this.pt[i]][0]) {
+					switch (this[this.pt[i]][0][j]["type"]) {
+						case "header":			
+							ttpt.addHeader(this[this.pt[i]][0][j]["data"],this[this.pt[i]][0][j]["serverPos"],this[this.pt[i]][0][j]["timeFetch"]);
+							break;
+						case "error":			
+							ttpt.addError();
+							break;
+						case "problem":			
+							ttpt.addRow(this[this.pt[i]][0][j]["data"],this[this.pt[i]][0][j]["aliasName"],this[this.pt[i]][0][j]["isNew"]);
+							break;
+					}
+				}
+
+//	        this[this.pt[i]][0].create(document.getElementById('nagioschecker-popup-'+this.pt[i]));
+	        ttpt.create(doc.getElementById('nagioschecker-popup-'+this.pt[i]));
 	      }
 	    }
 	}
