@@ -1,0 +1,20 @@
+TODO
+URGENT: Password Manager problem in FF3
+
+
+BUG: popup menu in corner on linux
+BUG: sometimes wrong onmouseover
+
+
+FIX: Force saving password with special chars
+
+Bigger things:
+NEW: Save config in external file.
+NEW: New filtering system (Regexps)
+
+My targets:
+NEW: Percentage od download
+Sound file for unreachable
+Filter by duration
+Filter by attempt ?
+Filtr na rozmezi duration
