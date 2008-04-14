@@ -2,10 +2,9 @@
 = Nagios demos =
 == Netways ==
 
-*Start page:* [http://nagios-demo.netways.de/]
+*Start page:* [http://nagios.demo.netways.de/]
 
 *Credentials:* guest:guest
-
 
 == dtnet ==
 
@@ -26,7 +25,5 @@
 *Start page:* [http://live.stic-online.de/nagios/]
 
 *Credentials:* stic:stic
-
-
 
 
