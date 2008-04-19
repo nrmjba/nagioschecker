@@ -39,6 +39,9 @@
 <!ENTITY nch.about.nagioscopyrights "Nagios и логотип Nagios являются зарегистрированными торговыми марками Ethan Galstad.">
 <!ENTITY nch.about.codecontributors "Участники проекта">
 <!ENTITY nch.about.ideasandbugreports "Идеи и помощь в отладке">
+<!ENTITY nch.about.fordonators "For donators">
+<!ENTITY nch.about.donators "Donators">
+<!ENTITY nch.about.alphabeticallylisted "Alphabetically listed">
 <!ENTITY nch.prefs.display "Представление">
 <!ENTITY nch.prefs.watchedsystems "Мониторинг систем Nagios">
 <!ENTITY nch.prefs.addnew "Добавить">
@@ -48,6 +51,7 @@
 <!ENTITY nch.prefs.long "Длинный формат">
 <!ENTITY nch.prefs.short "Короткий формат">
 <!ENTITY nch.prefs.numbersonly "Только числа">
+<!ENTITY nch.prefs.colorsonly "">
 <!ENTITY nch.prefs.infowindowtype "Тип информационного окна">
 <!ENTITY nch.prefs.allinonewindow "Все виды проблем в одном окне">
 <!ENTITY nch.prefs.individualwindows "Отдельное окно для каждого вида проблем">
@@ -58,7 +62,6 @@
 <!ENTITY nch.prefs.servicewarning "Предупреждение по сервису">
 <!ENTITY nch.prefs.serviceunknown "Состояние сервиса неизвестно">
 <!ENTITY nch.prefs.showininfowindow "Отобразить в информационном окне">
-<!ENTITY nch.prefs.showinfocolumn "Отобразить данные в информационном окне">
 <!ENTITY nch.prefs.blinking "Режим мерцания">
 <!ENTITY nch.prefs.off "Отключен">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "Обновить состояние, если появляется новая проблема">
@@ -93,7 +96,6 @@
 <!ENTITY nch.prefs.unreachable "Недоступно">
 <!ENTITY nch.prefs.replay "Повтор">
 <!ENTITY nch.prefs.getaliases "Загрузить синонимы хостов">
-<!ENTITY nch.prefs.showaliascolumn "Показать в информационном окне столбец с алиасами хостов (имеет смысл только в случае включённой опции загрузки алиасов хотя бы для одного Nagios-сервера)">
 <!ENTITY nch.prefs.shortwithservername "Кратко с именами серверов">
 <!ENTITY nch.prefs.numbersonlywithservername "Числа только с именами серверов">
 <!ENTITY nch.prefs.totalnumbers "С общими числами">
@@ -110,7 +112,30 @@
 <!ENTITY nch.prefs.makedonation "Пожертвования">
 <!ENTITY nch.prefs.hostsmatchingregexp "Хосты, соответствующие рег.выражению">
 <!ENTITY nch.prefs.servicesmatchingregexp "Сервисы, соответствующие рег.выражению">
+<!ENTITY nch.prefs.allflapping "">
 <!ENTITY nch.prefs.disable "Отключить">
 <!ENTITY nch.prefs.disabled "Отключено">
 <!ENTITY nch.prefs.onaddons "На сайте дополнений организации Mozilla">
 <!ENTITY nch.prefs.projecthome "Сайт проекта">
+<!ENTITY nch.prefs.moveup "">
+<!ENTITY nch.prefs.movedown "">
+<!ENTITY nch.prefs.reverseexp "">
+<!ENTITY nch.prefs.showinfowindowcolumns "">
+<!ENTITY nch.prefs.aliascolumn "">
+<!ENTITY nch.prefs.infocolumn "">
+<!ENTITY nch.prefs.flagscolumn "">
+<!ENTITY nch.prefs.statuscolumn "">
+<!ENTITY nch.prefs.attemptcolumn "">
+<!ENTITY nch.prefs.minimalservicesattempt "">
+<!ENTITY nch.prefs.advanced "">
+<!ENTITY nch.advanced.downloadtimeout "">
+<!ENTITY nch.advanced.prefertextconfig "Prefer loading of settings from an external text file rather than the Firefox internal configuration.">
+<!ENTITY nch.advanced.note_prefertextconfig "Could be useful when Firefox is terminated abnormaly and the unsaved preferences are lost. The configuration file will be loaded only when a Firefox window is opened first time.">
+<!ENTITY nch.prefs.working_days "Working days">
+<!ENTITY nch.prefs.monday_short "Mon">
+<!ENTITY nch.prefs.tuesday_short "Tue">
+<!ENTITY nch.prefs.wednesday_short "Wed">
+<!ENTITY nch.prefs.thursday_short "Thu">
+<!ENTITY nch.prefs.friday_short "Fri">
+<!ENTITY nch.prefs.saturday_short "Sat">
+<!ENTITY nch.prefs.sunday_short "Sun">
