@@ -1,0 +1,118 @@
+0.12
+* BUGFIX: rounded statusbar box corners removed due to fix displaying these boxes on various OSes
+
+0.11.9.3 (beta)
+* BUGFIX: Fixed displaying statusbar boxes in Windows Vista. 
+
+0.11.9.2 (beta)
+* BUGFIX: Fixed displaying of hosts scheduled down (by Cameron Moore)
+* INTERNAL: Updated About window (donators). 
+
+0.11.9.1 (beta)
+* BUGFIX: Fixed resolving disabled notification state (by Cameron Moore) 
+
+0.11.9 (beta)
+* NEW: Working days
+* INTERNAL: setNextCheck now used on start (sleepy icon is working from start)
+* NEW: Saving XML config, optionally prefer loading of this file
+* BUGFIX: Not working option to play sound only when NEW problems are found 
+
+0.11.1
+(public release of 0.11.0.1-0.11.0.2) 
+
+0.11.0.2
+* NEW: Can finally be run in Firefox 3.0
+
+0.11.0.1
+* BUGFIX: Sometimes opened wrong type of information window
+* LANG: Re-added tr-TR
+
+0.11
+(public release of 0.10.9-0.10.9.4)
+
+0.10.9.4 (testing)
+* NEW: Filter option 'host and services whose notifications is disabled' now accept also global disabled notifications
+
+0.10.9.3 (for Babelzilla)
+
+0.10.9.1 (testing)
+* NEW: Option to set status.cgi download timeout by user
+* NEW: Option to show/not show Attempt and Status solumns in information window
+* NEW: Option to specify the lowest level to play sound with (only for service alerts).
+* NEW: extremely short statusbar info (no No problem, colored background behind N-icon)
+* BUGFIX: Do not show empty popup when no alert available
+* BUGFIX: Fixed some bugs in Run only in first opened window
+
+0.10.9 (testing)
+* INTERNAL: New version of popup - tooltip and popup mashup
+* INTERNAL: Popup scrollbars are used instead of arrows, but scrollbars have to be still visible
+* BUGFIX: If there is no server active, then label Not Set is shown instead of No Problem
+* BUGFIX: No colored Error message
+* BUGFIX: Regexp on services used to remove the whole host - fixed
+* INTERNAL: Limit of number of servers increased to 200
+
+0.10.4
+* BUGFIX: removed annoying alert when there was sometimes problem with playing sound
+
+0.10.3
+* BUGFIX: sounds are playing again
+* BUGFIX: popup of different type sometimes opened at same time
+* LANG: updated fr-FR locale
+* LANG: updated bg-BG locale
+
+0.10.2 (not approved on Mozilla Add-ons)
+* INTERNAL: bugfix of "0.10.1 bugfix" Sorry!
+
+0.10.1
+* INTERNAL: merged omitted bugfixes from versions 0.9.1-0.9.5
+
+0.10
+* NEW: ability to change ordering of servers
+* NEW: time of last download of alerts for each server (shown in tooltip)
+* NEW: ability to choose inverse filtering of regular expressions
+* NEW: added filtering of flapping hosts and services
+* NEW: support for Flock 0.9+
+* NEW: added option to show hosts and services flags in tooltip
+* BUGFIX: now handles correctly Nagioses having its source code from unknown reasons without newline chracters
+* INTERNAL: First time succesfully tested on 3rd version of Nagios (3.0a5)
+
+0.9.5
+* BUGFIX: Stop/Run issues when triggered from window other than first
+* BUGFIX: Fixed filtering of services by regular expression
+
+0.9.4
+* BUGFIX: Fixed empty tooltip/popup in windows other than first
+
+0.9.2
+* BUGFIX: Correct locating of url for pages without a slash on the end of the url
+
+0.9.1
+* BUGFIX: Correct input box for server URL in New Server dialog in some translations
+* BUGFIX: Service names are now escaped for correct URL of service info page
+
+0.9:
+* BUGFIX: opening links from popup
+* NEW: option to disable/enable server
+* NEW: regexp on host or service
+* NEW: option to specify working hours (by M.Sviba)
+* NEW: special icons for Not Allowed and Stopped status
+* BUGFIX: opening links from Thunderbird (by I.Musil)
+* INTERNAL: new uri parsing (based on parseUri() function)
+* BUGFIX: icon tooltips were not removed correctly
+
+0.8:
+
+* NEW: option to set custom WAVs
+* NEW: option to open the clickable tooltip
+* NEW: option to download host aliases
+* NEW: indicator (exclamation mark) of new problem in tooltip
+* NEW: option to show total numbers in statusbar splited by server
+* BUGFIX: removed stylesheets that impact other extensions
+* INTERNAL: added timeout for problems download (30 sec)
+* INTERNAL: faster load of the Settings dialog
+* NEW: new colors and rounded corners :-)
+* NEW: [Show in info window] option remade as Filter out
+* NEW: option to blink only the types affected
+* INTERNAL: max-height tooltip
+
+ 
