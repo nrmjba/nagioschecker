@@ -35,10 +35,13 @@
 <!ENTITY nch.about.translators "Traductores">
 <!ENTITY nch.about.author "Petr Simek">
 <!ENTITY nch.about.homepage "Página de Inicio">
-<!ENTITY nch.about.copyrights "Copyrights">
+<!ENTITY nch.about.copyrights "Derechos de autor">
 <!ENTITY nch.about.nagioscopyrights "Nagios y el logo Nagios son marcas registradas de Ethen Galstad.">
 <!ENTITY nch.about.codecontributors "Contribuidores de código">
 <!ENTITY nch.about.ideasandbugreports "Ideas y reportes de fallas">
+<!ENTITY nch.about.fordonators "Para donantes">
+<!ENTITY nch.about.donators "Donantes">
+<!ENTITY nch.about.alphabeticallylisted "Listado alfabético">
 <!ENTITY nch.prefs.display "Mostrar">
 <!ENTITY nch.prefs.watchedsystems "Paginas Nagios a observar">
 <!ENTITY nch.prefs.addnew "Agregar nuevo">
@@ -48,6 +51,7 @@
 <!ENTITY nch.prefs.long "Largo">
 <!ENTITY nch.prefs.short "Corto">
 <!ENTITY nch.prefs.numbersonly "Solo números">
+<!ENTITY nch.prefs.colorsonly "Solo colores">
 <!ENTITY nch.prefs.infowindowtype "Tipo de ventana de información">
 <!ENTITY nch.prefs.allinonewindow "Todos los problemas en una ventana">
 <!ENTITY nch.prefs.individualwindows "Ventanas individuales para cada tipo de problema">
@@ -58,7 +62,6 @@
 <!ENTITY nch.prefs.servicewarning "Advertencia de Servicio">
 <!ENTITY nch.prefs.serviceunknown "Servicio desconocido">
 <!ENTITY nch.prefs.showininfowindow "Mostrar en ventana de informacion">
-<!ENTITY nch.prefs.showinfocolumn "Mostrar columna de informacion en ventana de informacion">
 <!ENTITY nch.prefs.blinking "Intermitente">
 <!ENTITY nch.prefs.off "Apagado">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "En estado de actualizar si hay nuevos problemas">
@@ -93,7 +96,6 @@
 <!ENTITY nch.prefs.unreachable "Inalcanzable">
 <!ENTITY nch.prefs.replay "Replay">
 <!ENTITY nch.prefs.getaliases "Descargar los alias de equipos">
-<!ENTITY nch.prefs.showaliascolumn "Mostrar columna de alias del equipo en la ventana de información (solo tiene sentido si definió la opción de descargar los alias en al menos un servisor Nagios)">
 <!ENTITY nch.prefs.shortwithservername "Corto con nombres de servidores">
 <!ENTITY nch.prefs.numbersonlywithservername "Solo numeros con nombres de servidores">
 <!ENTITY nch.prefs.totalnumbers "Con numeros totales">
@@ -110,7 +112,30 @@
 <!ENTITY nch.prefs.makedonation "Realizar donación">
 <!ENTITY nch.prefs.hostsmatchingregexp "Equipos que concuerdan con expresión regular">
 <!ENTITY nch.prefs.servicesmatchingregexp "Servicios que concuerdan con expresión regular">
+<!ENTITY nch.prefs.allflapping "Todos los equipos y servicios intermitentes">
 <!ENTITY nch.prefs.disable "Deshabilitar">
 <!ENTITY nch.prefs.disabled "Deshabilitado">
 <!ENTITY nch.prefs.onaddons "En el sitio de agregados de Mozilla">
 <!ENTITY nch.prefs.projecthome "Hogar del projecto">
+<!ENTITY nch.prefs.moveup "Mover hacia arriba">
+<!ENTITY nch.prefs.movedown "Mover hacia abajo">
+<!ENTITY nch.prefs.reverseexp "revertir la expresiòn">
+<!ENTITY nch.prefs.showinfowindowcolumns "Mostrar columnas en ventana de informacion">
+<!ENTITY nch.prefs.aliascolumn "Equipo (alias)">
+<!ENTITY nch.prefs.infocolumn "Informacion">
+<!ENTITY nch.prefs.flagscolumn "Marcas">
+<!ENTITY nch.prefs.statuscolumn "Estado">
+<!ENTITY nch.prefs.attemptcolumn "Intento">
+<!ENTITY nch.prefs.minimalservicesattempt "Intento minimo del servicio para reproducir el sonido">
+<!ENTITY nch.prefs.advanced "Avanzado">
+<!ENTITY nch.advanced.downloadtimeout "Timeout de descarga Status.cgi (en segundos)">
+<!ENTITY nch.advanced.prefertextconfig "Prefiero cargar los ajustes de un archivo externo y no de la configuración interna de Firefox.">
+<!ENTITY nch.advanced.note_prefertextconfig "Puede ser util cuando Firefox sea terminado abnormalmente y las preferencias no guardadas se pierdan. El archivo de configuración solo cuando una ventana de Firefox sea abierta por primera vez.">
+<!ENTITY nch.prefs.working_days "Días de trabajo">
+<!ENTITY nch.prefs.monday_short "Lun">
+<!ENTITY nch.prefs.tuesday_short "Mar">
+<!ENTITY nch.prefs.wednesday_short "Mie">
+<!ENTITY nch.prefs.thursday_short "Jue">
+<!ENTITY nch.prefs.friday_short "Vie">
+<!ENTITY nch.prefs.saturday_short "Sab">
+<!ENTITY nch.prefs.sunday_short "Dom">
