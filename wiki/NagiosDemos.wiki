@@ -16,10 +16,6 @@
 
 *Credentials:* guest:guest
 
-==RunNagios==
-
-*Start page:* [http://www.runnagios.be/]
-
 == Stic ==
 
 *Start page:* [http://live.stic-online.de/nagios/]
