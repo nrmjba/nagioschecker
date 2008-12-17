@@ -25,3 +25,9 @@
 *Start page:* [http://live.stic-online.de/nagios/]
 
 *Credentials:* stic:stic
+
+== NagiosAdmin ==
+
+*Start page:* [http://demo.nagiosadmin.de/nagios/]
+
+*Credentials:* nagiosadmin:nagiosadmin
