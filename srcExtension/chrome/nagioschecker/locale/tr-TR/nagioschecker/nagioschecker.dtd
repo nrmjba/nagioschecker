@@ -16,6 +16,8 @@
 <!ENTITY nch.prefs.username "Kullanıcı">
 <!ENTITY nch.prefs.password "Şifre">
 <!ENTITY nch.prefs.versionolderthan20 "Nagios sürümü 2.0&apos;dan daha eski">
+<!ENTITY nch.prefs.servertype "Server type">
+<!ENTITY nch.prefs.standalonenagios "Standalone Nagios">
 <!ENTITY nch.prefs.plainpass "Bu güven belgelerini tarayıcının Şifre Yöneticisini kullanarak saklama">
 <!ENTITY nch.prefs.exampleurl "Ör.: http://www.alanadi.cz/nagios">
 <!ENTITY nch.prefs.examplestatusurl "Ör.: http://www.yourcompany.com/nagios/cgi-bin/status.cgi">
@@ -39,8 +41,11 @@
 <!ENTITY nch.about.nagioscopyrights "Nagios ve Nagios logosu Ethan Galstad&apos;ın ticari markasıdır.">
 <!ENTITY nch.about.codecontributors "Koda Katkıda Bulunanlar">
 <!ENTITY nch.about.ideasandbugreports "Fikirler ve Hata Raporları">
+<!ENTITY nch.about.fordonators "Bağış yapanlar için">
+<!ENTITY nch.about.donators "Bağış yapanlar">
+<!ENTITY nch.about.alphabeticallylisted "Abecesel olarak liste">
 <!ENTITY nch.prefs.display "Göster">
-<!ENTITY nch.prefs.watchedsystems "İzlenen Nagios sistemleri">
+<!ENTITY nch.prefs.watchedsystems "İzlenen Nagios Sayfa(ları)">
 <!ENTITY nch.prefs.addnew "Yeni ekle">
 <!ENTITY nch.prefs.edit "Düzenle">
 <!ENTITY nch.prefs.remove "Kaldır">
@@ -48,6 +53,7 @@
 <!ENTITY nch.prefs.long "Uzun">
 <!ENTITY nch.prefs.short "Kısa">
 <!ENTITY nch.prefs.numbersonly "Yalnızca sayılar">
+<!ENTITY nch.prefs.colorsonly "Yalnızca renkler">
 <!ENTITY nch.prefs.infowindowtype "Bilgi penceresi tipi">
 <!ENTITY nch.prefs.allinonewindow "Tüm sorunlar tek pencerede">
 <!ENTITY nch.prefs.individualwindows "Her sorun tipi için özel pencere">
@@ -58,7 +64,6 @@
 <!ENTITY nch.prefs.servicewarning "Hizmet uyarısı">
 <!ENTITY nch.prefs.serviceunknown "Hizmet bilinmiyor">
 <!ENTITY nch.prefs.showininfowindow "Bilgi penceresinde göster">
-<!ENTITY nch.prefs.showinfocolumn "Bilgi sütununu bilgi penceresinde göster">
 <!ENTITY nch.prefs.blinking "Kırpma">
 <!ENTITY nch.prefs.off "Kapalı">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "Durum çubuğunu eğer yeni bir sorun belirirse güncelle">
@@ -93,7 +98,6 @@
 <!ENTITY nch.prefs.unreachable "Erişilemez">
 <!ENTITY nch.prefs.replay "Cevapla">
 <!ENTITY nch.prefs.getaliases "Ana bilgisayar takma adı indir.">
-<!ENTITY nch.prefs.showaliascolumn "Bilgi penceresinde Ana bilgisayar takma adı sütununu göster (Eğer en azından bir Nagios sunucusu için takma adları indir seçeneğini işaretlemişseniz)">
 <!ENTITY nch.prefs.shortwithservername "Sunucu isimleri ile birlikte kısalt">
 <!ENTITY nch.prefs.numbersonlywithservername "Yalnızca sunucu adları ile numaralar">
 <!ENTITY nch.prefs.totalnumbers "Toplam numaralarla birlikte">
@@ -110,7 +114,30 @@
 <!ENTITY nch.prefs.makedonation "Bağış yap">
 <!ENTITY nch.prefs.hostsmatchingregexp "Düzenli ifadeyle eşleşen ana sistemler">
 <!ENTITY nch.prefs.servicesmatchingregexp "Düzenli ifadeyle eşleşen hizmetler">
+<!ENTITY nch.prefs.allflapping "Tüm dalgalanan ana bilisayar ve hizmetler">
 <!ENTITY nch.prefs.disable "Etkisiz kıl">
 <!ENTITY nch.prefs.disabled "Etkisiz kılındı">
 <!ENTITY nch.prefs.onaddons "Mozilla eklenti sitesinde">
 <!ENTITY nch.prefs.projecthome "Projenin ev sayfası">
+<!ENTITY nch.prefs.moveup "Yurkarı taşı">
+<!ENTITY nch.prefs.movedown "Aşağı taşı">
+<!ENTITY nch.prefs.reverseexp "ters ifade">
+<!ENTITY nch.prefs.showinfowindowcolumns "Bilgi penceresinde sütunları göster">
+<!ENTITY nch.prefs.aliascolumn "Ana sistemler (takma isimler)">
+<!ENTITY nch.prefs.infocolumn "Bilgi">
+<!ENTITY nch.prefs.flagscolumn "Bayraklar">
+<!ENTITY nch.prefs.statuscolumn "Durum">
+<!ENTITY nch.prefs.attemptcolumn "Girişim">
+<!ENTITY nch.prefs.minimalservicesattempt "Sesli uyarı için en az hizmet girişimi">
+<!ENTITY nch.prefs.advanced "İleri Seviye">
+<!ENTITY nch.advanced.downloadtimeout "Status.cgi indirmesi zamanaşımı (saniyeler)">
+<!ENTITY nch.advanced.prefertextconfig "Ayarları Firefox&apos;un dahili yapılandırması yerine harici bir metin dosyasından yüklemeyi yeğle.">
+<!ENTITY nch.advanced.note_prefertextconfig "Firefox olağandışı olarak sonlandırıldığında ve kaydedilmemiş tercihler kaybolduğunda yararlıdır. Yapılandırma dosyası yalnızca Firefox penceresi ilk açıldığında yüklenecektir.">
+<!ENTITY nch.prefs.working_days "Çalışma günleri">
+<!ENTITY nch.prefs.monday_short "Pzt">
+<!ENTITY nch.prefs.tuesday_short "Sal">
+<!ENTITY nch.prefs.wednesday_short "Çar">
+<!ENTITY nch.prefs.thursday_short "Per">
+<!ENTITY nch.prefs.friday_short "Cum">
+<!ENTITY nch.prefs.saturday_short "Cmt">
+<!ENTITY nch.prefs.sunday_short "Paz">
