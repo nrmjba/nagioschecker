@@ -16,6 +16,8 @@
 <!ENTITY nch.prefs.username "Utilisateur">
 <!ENTITY nch.prefs.password "Mot de passe">
 <!ENTITY nch.prefs.versionolderthan20 "La version de Nagios est inférieure à 2.0">
+<!ENTITY nch.prefs.servertype "Type de serveur">
+<!ENTITY nch.prefs.standalonenagios "Nagios autonome">
 <!ENTITY nch.prefs.plainpass "Ne pas utiliser le gestionnaire des mots de passe de Firefox pour sauvegarder les accréditations">
 <!ENTITY nch.prefs.exampleurl "Ex. : http://www.votrecompagnie.fr/nagios/">
 <!ENTITY nch.prefs.examplestatusurl "Ex. : http://www.votrecompagnie.fr/nagios/cgi-bin/status.cgi">
@@ -39,6 +41,9 @@
 <!ENTITY nch.about.nagioscopyrights "Nagios et le logo Nagios sont des marques déposées d&apos;Ethan Galstad.">
 <!ENTITY nch.about.codecontributors "Ont contribués au code">
 <!ENTITY nch.about.ideasandbugreports "Idées et reports de bug">
+<!ENTITY nch.about.fordonators "Pour les donateurs">
+<!ENTITY nch.about.donators "Donateurs">
+<!ENTITY nch.about.alphabeticallylisted "Liste alphabétique">
 <!ENTITY nch.prefs.display "Affichage">
 <!ENTITY nch.prefs.watchedsystems "Systèmes Nagios surveillés">
 <!ENTITY nch.prefs.addnew "Ajouter">
@@ -48,6 +53,7 @@
 <!ENTITY nch.prefs.long "Complet">
 <!ENTITY nch.prefs.short "Abrégé">
 <!ENTITY nch.prefs.numbersonly "Uniquement les chiffres">
+<!ENTITY nch.prefs.colorsonly "Couleurs uniquement">
 <!ENTITY nch.prefs.infowindowtype "Type de fenêtre pour les informations">
 <!ENTITY nch.prefs.allinonewindow "Tous les problèmes dans une fenêtre">
 <!ENTITY nch.prefs.individualwindows "Une fenêtre pour chaque type de problème">
@@ -58,7 +64,6 @@
 <!ENTITY nch.prefs.servicewarning "Service en alerte">
 <!ENTITY nch.prefs.serviceunknown "Service inconnu">
 <!ENTITY nch.prefs.showininfowindow "Afficher dans la fenêtre d&apos;information">
-<!ENTITY nch.prefs.showinfocolumn "Afficher la colonne &apos;Information&apos; dans la fenêtre d&apos;information">
 <!ENTITY nch.prefs.blinking "Clignotement">
 <!ENTITY nch.prefs.off "Arrêté">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "Lors d&apos;une mise à jour si un nouveau problème apparaît">
@@ -93,7 +98,6 @@
 <!ENTITY nch.prefs.unreachable "Injoignable">
 <!ENTITY nch.prefs.replay "Rejouer">
 <!ENTITY nch.prefs.getaliases "Télécharger les alias des hôtes">
-<!ENTITY nch.prefs.showaliascolumn "Afficher la colonne &quot;alias des hôtes&quot; dans la fenêtre d&apos;information (n&apos;a d&apos;intérêt que si vous avez activé l&apos;option de téléchargement des alias sur au moins un serveur Nagios)">
 <!ENTITY nch.prefs.shortwithservername "Abrégé avec les noms des serveurs">
 <!ENTITY nch.prefs.numbersonlywithservername "Uniquement les chiffres avec les noms des serveurs">
 <!ENTITY nch.prefs.totalnumbers "Avec tous les chiffres">
@@ -110,7 +114,37 @@
 <!ENTITY nch.prefs.makedonation "Faire une donation">
 <!ENTITY nch.prefs.hostsmatchingregexp "Hôtes correspondant à cette expression régulière">
 <!ENTITY nch.prefs.servicesmatchingregexp "Services correspondant à cette expression régulière">
+<!ENTITY nch.prefs.infomatchingregexp "Colonne information correspondant à cette expression régulière">
+<!ENTITY nch.prefs.allflapping "Tous les hôtes et services instables">
 <!ENTITY nch.prefs.disable "Désactiver">
 <!ENTITY nch.prefs.disabled "Désactivé">
 <!ENTITY nch.prefs.onaddons "Sur le site Mozilla Add-Ons">
 <!ENTITY nch.prefs.projecthome "Page web du projet">
+<!ENTITY nch.prefs.moveup "Monter">
+<!ENTITY nch.prefs.movedown "Descendre">
+<!ENTITY nch.prefs.reverseexp "expression inverse">
+<!ENTITY nch.prefs.showinfowindowcolumns "Colonnes à afficher dans la fenêtre d&apos;information">
+<!ENTITY nch.prefs.aliascolumn "Hôte (alias)">
+<!ENTITY nch.prefs.infocolumn "Information">
+<!ENTITY nch.prefs.flagscolumn "Marquage">
+<!ENTITY nch.prefs.statuscolumn "État">
+<!ENTITY nch.prefs.attemptcolumn "Tentative">
+<!ENTITY nch.prefs.minimalservicesattempt "Minimum de tentatives pour les services avant de jouer le son">
+<!ENTITY nch.prefs.advanced "Avancé">
+<!ENTITY nch.advanced.downloadtimeout "Délai maximum pour télécharger &quot;Status.cgi&quot; (en secondes)">
+<!ENTITY nch.advanced.prefertextconfig "Préférer charger les paramètres depuis un fichier texte externe plutôt que depuis la configuration interne de Firefox.">
+<!ENTITY nch.advanced.note_prefertextconfig "Peut être utile quand Firefox est terminé anormalement et que les préférences non sauvegardées sont perdues. Le fichier de configuration sera chargé seulement quand une fenêtre de Firefox est ouverte la première fois.">
+<!ENTITY nch.prefs.working_days "Jours de travail">
+<!ENTITY nch.prefs.monday_short "Lun">
+<!ENTITY nch.prefs.tuesday_short "Mar">
+<!ENTITY nch.prefs.wednesday_short "Mer">
+<!ENTITY nch.prefs.thursday_short "Jeu">
+<!ENTITY nch.prefs.friday_short "Ven">
+<!ENTITY nch.prefs.saturday_short "Sam">
+<!ENTITY nch.prefs.sunday_short "Dim">
+<!ENTITY nch.about.license "Licence">
+<!ENTITY nch.prefs.nagiossystems "Systèmes Nagios">
+<!ENTITY nch.prefs.detaillevel "Niveau de détail">
+<!ENTITY nch.prefs.windowtype "Type de fenêtre">
+<!ENTITY nch.prefs.statusbar "Barre d&apos;état">
+<!ENTITY nch.prefs.infowindow "Fenêtre d&apos;information">

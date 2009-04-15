@@ -17,6 +17,8 @@
 <!ENTITY nch.prefs.username "Přihl. jméno">
 <!ENTITY nch.prefs.password "Heslo">
 <!ENTITY nch.prefs.versionolderthan20 "Verze Nagiosu starší než 2.0">
+<!ENTITY nch.prefs.servertype "Typ serveru">
+<!ENTITY nch.prefs.standalonenagios "Samostatný Nagios">
 <!ENTITY nch.prefs.plainpass "Neukládat přihlašovací údaje pomocí Správce hesel prohlížeče">
 <!ENTITY nch.prefs.fullurl "Adresa webového rozhraní Nagiosu">
 <!ENTITY nch.prefs.exampleurl "Např.: http://www.vasefirma.cz/nagios/">
@@ -24,11 +26,11 @@
 <!ENTITY nch.prefs.statusurl "Adresa stavového skriptu">
 <!ENTITY nch.prefs.foundstatusurl "Zjištěná adresa">
 <!ENTITY nch.prefs.locateurl "Zjistit adresu">
-<!ENTITY nch.prefs.updateinterval "Interval aktualizace (v minutách)">
+<!ENTITY nch.prefs.updateinterval "Interval aktualizace (mm:ss)">
 <!ENTITY nch.prefs.worktime "Pracovní hodiny pluginu (hh:mm)">
 <!ENTITY nch.prefs.utilityrun "Běh programu">
 <!ENTITY nch.prefs.other "Ostatní">
-<!ENTITY nch.prefs.onewindowonly "Spustit jen v okně, otevřeném jako prvním">
+<!ENTITY nch.prefs.onewindowonly "Spustit pouze v okně, otevřeném jako prvním">
 
 <!ENTITY nch.about.original "Původní název">
 <!ENTITY nch.about.version "Verze">
@@ -42,6 +44,9 @@
 <!ENTITY nch.about.nagioscopyrights "Nagios a Nagios logo jsou registrované obchodní známky Ethana Galstada.">
 <!ENTITY nch.about.codecontributors "Přispěvatelé kódu">
 <!ENTITY nch.about.ideasandbugreports "Nápady a hlášení chyb">
+<!ENTITY nch.about.fordonators "Pro sponzory">
+<!ENTITY nch.about.donators "Sponzoři">
+<!ENTITY nch.about.alphabeticallylisted "Abecedně řazení">
 
 <!ENTITY nch.prefs.display "Zobrazení">
 <!ENTITY nch.prefs.watchedsystems "Sledované systémy Nagios">
@@ -52,6 +57,7 @@
 <!ENTITY nch.prefs.long "Dlouhá">
 <!ENTITY nch.prefs.short "Krátká">
 <!ENTITY nch.prefs.numbersonly "Pouze čísla">
+<!ENTITY nch.prefs.colorsonly "Pouze barvy">
 <!ENTITY nch.prefs.infowindowtype "Typ informačního okna">
 <!ENTITY nch.prefs.allinonewindow "Všechna hlášení v jednom okně">
 <!ENTITY nch.prefs.individualwindows "Samostatné okno pro každý typ hlášení">
@@ -62,7 +68,6 @@
 <!ENTITY nch.prefs.servicewarning "Varovný stav služby">
 <!ENTITY nch.prefs.serviceunknown "Neznámý stav služby">
 <!ENTITY nch.prefs.showininfowindow "Zobrazovat v informačním okně">
-<!ENTITY nch.prefs.showinfocolumn "Zobrazovat sloupec Informace v informačním okně">
 <!ENTITY nch.prefs.blinking "Blikání">
 <!ENTITY nch.prefs.off "Vypnuto">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "Při aktualizaci stavu, pokud se objeví nové hlášení">
@@ -97,7 +102,6 @@
 <!ENTITY nch.prefs.unreachable "Nedosažitelný">
 <!ENTITY nch.prefs.replay "Přehrát">
 <!ENTITY nch.prefs.getaliases "Stahovat aliasy k jménům hostitelů">
-<!ENTITY nch.prefs.showaliascolumn "Zobrazovat sloupec Alias hostitele v informačním okně (má smysl pouze pokud je alespoň u jednoho serveru nastaveno stahování aliasů)">
 <!ENTITY nch.prefs.shortwithservername "Krátká s názvem serveru">
 <!ENTITY nch.prefs.numbersonlywithservername "Pouze čísla s názvem serveru">
 <!ENTITY nch.prefs.totalnumbers "S celkovými čísly">
@@ -109,12 +113,14 @@
 <!ENTITY nch.prefs.allunknownservices "Všechny služby v neznámém stavu">
 <!ENTITY nch.prefs.allcriticalservices "Všechny služby v kritickém stavu">
 <!ENTITY nch.prefs.blinkalltypesonstatusupdateifnewproblemappears "Blikají všechny typy, pokud se objeví nové hlášení">
-<!ENTITY nch.prefs.blinkaffectedtypesonstatusupdateifnewproblemappears "Blikají jen ty typy, kde se objeví nové hlášení">
+<!ENTITY nch.prefs.blinkaffectedtypesonstatusupdateifnewproblemappears "Blikají pouze ty typy, kde se objeví nové hlášení">
 <!ENTITY nch.prefs.blinkalltypesoneverystatusupdateifatleastoneproblemexists "Blikají všechny typy, pokud existuje alespoň jedno hlášení">
 <!ENTITY nch.prefs.aliases "Aliasy">
 <!ENTITY nch.prefs.makedonation "Podpořte vývoj">
 <!ENTITY nch.prefs.hostsmatchingregexp "Hostitelé odpovídající regulárnímu výrazu">
 <!ENTITY nch.prefs.servicesmatchingregexp "Služby odpovídající regulárnímu výrazu">
+<!ENTITY nch.prefs.infomatchingregexp "Všechny události se sloupcem Informace odpov. regulár. výrazu">
+<!ENTITY nch.prefs.allflapping "Všechny hostitele a služby, v kolísavém stavu (FLAPPING)">
 
 <!ENTITY nch.prefs.disable "Vypnout">
 <!ENTITY nch.prefs.disabled "Vypnutý">
@@ -123,3 +129,34 @@
 
 <!ENTITY nch.prefs.moveup "Posunout nahoru">
 <!ENTITY nch.prefs.movedown "Posunout dolů">
+
+<!ENTITY nch.prefs.reverseexp "opak výrazu">
+
+<!ENTITY nch.prefs.showinfowindowcolumns "Zobrazovat v informačním okně sloupce">
+<!ENTITY nch.prefs.aliascolumn "Hostitel (alias)">
+<!ENTITY nch.prefs.infocolumn "Informace">
+<!ENTITY nch.prefs.flagscolumn "Příznaky">
+<!ENTITY nch.prefs.statuscolumn "Stav">
+<!ENTITY nch.prefs.attemptcolumn "Pokus">
+<!ENTITY nch.prefs.minimalservicesattempt "Minimální pokus (služby) k přehrání zvuku">
+
+<!ENTITY nch.prefs.advanced "Pokročilé">
+<!ENTITY nch.advanced.downloadtimeout "Časový limit stahování status.cgi (ve vteřinách)">
+<!ENTITY nch.advanced.prefertextconfig "Preferovat nahrání nastavení z externího textového souboru místo z interního konfiguračního systému.">
+<!ENTITY nch.advanced.note_prefertextconfig "Toto může být užitečné pokud je aplikace ukončena neočekávaně a nastavení uložené v aplikace může být ztraceno.  Konfigurační soubor je nahrávan pouze při prvním otevření okna aplikace.">
+
+<!ENTITY nch.prefs.working_days "Pracovní dny">
+<!ENTITY nch.prefs.monday_short "Pon">
+<!ENTITY nch.prefs.tuesday_short "Úte">
+<!ENTITY nch.prefs.wednesday_short "Stř">
+<!ENTITY nch.prefs.thursday_short "Čtv">
+<!ENTITY nch.prefs.friday_short "Pát">
+<!ENTITY nch.prefs.saturday_short "Sob">
+<!ENTITY nch.prefs.sunday_short "Ned">
+
+<!ENTITY nch.about.license "Licence">
+<!ENTITY nch.prefs.nagiossystems "Systémy Nagios">
+<!ENTITY nch.prefs.detaillevel "Úroveň zobrazení">
+<!ENTITY nch.prefs.windowtype "Typ okna">
+<!ENTITY nch.prefs.statusbar "Stavový řádek">
+<!ENTITY nch.prefs.infowindow "Informační okno">

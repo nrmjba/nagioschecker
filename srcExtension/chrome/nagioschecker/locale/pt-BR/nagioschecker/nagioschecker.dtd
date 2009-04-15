@@ -16,6 +16,8 @@
 <!ENTITY nch.prefs.username "Usuário">
 <!ENTITY nch.prefs.password "Senha">
 <!ENTITY nch.prefs.versionolderthan20 "Versão do Nagios mais velha que 2.0">
+<!ENTITY nch.prefs.servertype "Tipo de Servidor">
+<!ENTITY nch.prefs.standalonenagios "Nagios Standalone">
 <!ENTITY nch.prefs.plainpass "Não armazenar essas credenciais usando o Gerenciador de Senhas">
 <!ENTITY nch.prefs.exampleurl "Ex.: http://www.suaempresa.com.br/nagios/">
 <!ENTITY nch.prefs.examplestatusurl "Ex.: http://www.suaempresa.com.br/nagios/cgi-bin/status.cgi">
@@ -39,6 +41,9 @@
 <!ENTITY nch.about.nagioscopyrights "Nagios e a logo do Nagios são marcas registradas de Ethan Galstad.">
 <!ENTITY nch.about.codecontributors "Contribuidores do Código">
 <!ENTITY nch.about.ideasandbugreports "Idéias e relatórios de bug">
+<!ENTITY nch.about.fordonators "Para donativos">
+<!ENTITY nch.about.donators "Doadores">
+<!ENTITY nch.about.alphabeticallylisted "Lista em ordem alfabética">
 <!ENTITY nch.prefs.display "Mostrar">
 <!ENTITY nch.prefs.watchedsystems "Sessões Nagios">
 <!ENTITY nch.prefs.addnew "Adicionar novo">
@@ -48,6 +53,7 @@
 <!ENTITY nch.prefs.long "Longa">
 <!ENTITY nch.prefs.short "Curta">
 <!ENTITY nch.prefs.numbersonly "Somente números">
+<!ENTITY nch.prefs.colorsonly "Somente cores">
 <!ENTITY nch.prefs.infowindowtype "Tipo de informação">
 <!ENTITY nch.prefs.allinonewindow "Todos problemas em uma janela">
 <!ENTITY nch.prefs.individualwindows "Janela individual para cada tipo de problema">
@@ -58,7 +64,6 @@
 <!ENTITY nch.prefs.servicewarning "Serviço alertado">
 <!ENTITY nch.prefs.serviceunknown "Serviço desconhecido">
 <!ENTITY nch.prefs.showininfowindow "Mostrar na janela de informação">
-<!ENTITY nch.prefs.showinfocolumn "Mostrar coluna de informação na janela de informação">
 <!ENTITY nch.prefs.blinking "Piscar">
 <!ENTITY nch.prefs.off "Desligar">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "Atualizar status se novos problemas aparecerem">
@@ -93,7 +98,6 @@
 <!ENTITY nch.prefs.unreachable "Inalcançável">
 <!ENTITY nch.prefs.replay "Replay">
 <!ENTITY nch.prefs.getaliases "Download apelido do host">
-<!ENTITY nch.prefs.showaliascolumn "Mostrar coluna de apelido de host na janela de informação (Somente habilite se foi definido efetuar download do apelido do host configurado no servidor Nagios)">
 <!ENTITY nch.prefs.shortwithservername "Classificar pelo nome dos servidores">
 <!ENTITY nch.prefs.numbersonlywithservername "Número somente com nomes dos servidores">
 <!ENTITY nch.prefs.totalnumbers "Com números totais">
@@ -110,7 +114,37 @@
 <!ENTITY nch.prefs.makedonation "Faça uma doação">
 <!ENTITY nch.prefs.hostsmatchingregexp "Hosts que combinam com a expressão regular">
 <!ENTITY nch.prefs.servicesmatchingregexp "Serviços que combinam com a expressão regular">
+<!ENTITY nch.prefs.infomatchingregexp "Coluna de informação combina com expressão regular">
+<!ENTITY nch.prefs.allflapping "Sinalizar todos os hosts e serviços">
 <!ENTITY nch.prefs.disable "Desabilitar">
 <!ENTITY nch.prefs.disabled "Desabilitado">
 <!ENTITY nch.prefs.onaddons "No site de add-ons do Mozilla">
 <!ENTITY nch.prefs.projecthome "Página do projeto">
+<!ENTITY nch.prefs.moveup "Mover para cima">
+<!ENTITY nch.prefs.movedown "Mover para baixo">
+<!ENTITY nch.prefs.reverseexp "expressão reversa">
+<!ENTITY nch.prefs.showinfowindowcolumns "Mostrar colunas na janela de informação">
+<!ENTITY nch.prefs.aliascolumn "Host (alias)">
+<!ENTITY nch.prefs.infocolumn "Informação">
+<!ENTITY nch.prefs.flagscolumn "Flags">
+<!ENTITY nch.prefs.statuscolumn "Status">
+<!ENTITY nch.prefs.attemptcolumn "Tentativa">
+<!ENTITY nch.prefs.minimalservicesattempt "Serviço de tentativa de reproduzir o som">
+<!ENTITY nch.prefs.advanced "Avançado">
+<!ENTITY nch.advanced.downloadtimeout "Tempo expirado no download do Status.cgi  (em segundos)">
+<!ENTITY nch.advanced.prefertextconfig "Carregar configurações de uma arquivo externo ao invés das configurações internas do Firefox.">
+<!ENTITY nch.advanced.note_prefertextconfig "Poderá ser útil quando o Firefox terminar de forma anormal e as configurações não salvas forem perdidas. O arquivo de configuração será carregado somente quando o Firefox for iniciado a primeira vez.">
+<!ENTITY nch.prefs.working_days "Dias">
+<!ENTITY nch.prefs.monday_short "Seg">
+<!ENTITY nch.prefs.tuesday_short "Ter">
+<!ENTITY nch.prefs.wednesday_short "Qua">
+<!ENTITY nch.prefs.thursday_short "Qui">
+<!ENTITY nch.prefs.friday_short "Sex">
+<!ENTITY nch.prefs.saturday_short "Sab">
+<!ENTITY nch.prefs.sunday_short "Dom">
+<!ENTITY nch.about.license "Licença">
+<!ENTITY nch.prefs.nagiossystems "Sistema Nagios">
+<!ENTITY nch.prefs.detaillevel "Nível de Detalhes">
+<!ENTITY nch.prefs.windowtype "Tipo de Janela">
+<!ENTITY nch.prefs.statusbar "Barra de Status">
+<!ENTITY nch.prefs.infowindow "Janela de Informação">

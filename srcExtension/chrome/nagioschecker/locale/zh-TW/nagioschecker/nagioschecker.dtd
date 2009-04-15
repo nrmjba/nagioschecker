@@ -16,6 +16,8 @@
 <!ENTITY nch.prefs.username "用戶名稱">
 <!ENTITY nch.prefs.password "密碼">
 <!ENTITY nch.prefs.versionolderthan20 "Nagios 版本舊於2.0">
+<!ENTITY nch.prefs.servertype "伺服器種類">
+<!ENTITY nch.prefs.standalonenagios "獨立Nagios">
 <!ENTITY nch.prefs.plainpass "不用瀏覽器的密碼管理員儲存此憑證">
 <!ENTITY nch.prefs.exampleurl "例如: http://www.yourcompany.cz/nagios/">
 <!ENTITY nch.prefs.examplestatusurl "例如: http://www.yourcompany.com/nagios/cgi-bin/status.cgi">
@@ -39,6 +41,9 @@
 <!ENTITY nch.about.nagioscopyrights "Nagios 與 Nagios 圖示 均屬 Ethan Galstad 的已註冊商標">
 <!ENTITY nch.about.codecontributors "程式貢獻者">
 <!ENTITY nch.about.ideasandbugreports "意見及問題回報">
+<!ENTITY nch.about.fordonators "給捐贈者">
+<!ENTITY nch.about.donators "捐贈者">
+<!ENTITY nch.about.alphabeticallylisted "按字母排列">
 <!ENTITY nch.prefs.display "顯示">
 <!ENTITY nch.prefs.watchedsystems "已監測的Nagios 系統">
 <!ENTITY nch.prefs.addnew "加入">
@@ -48,6 +53,7 @@
 <!ENTITY nch.prefs.long "長">
 <!ENTITY nch.prefs.short "短">
 <!ENTITY nch.prefs.numbersonly "只顯示數字">
+<!ENTITY nch.prefs.colorsonly "只顯示數字顏色">
 <!ENTITY nch.prefs.infowindowtype "資訊視窗類型">
 <!ENTITY nch.prefs.allinonewindow "一個視窗顯示所有問題">
 <!ENTITY nch.prefs.individualwindows "獨立視窗顯示每種類型">
@@ -58,7 +64,6 @@
 <!ENTITY nch.prefs.servicewarning "服務警告">
 <!ENTITY nch.prefs.serviceunknown "未知服務">
 <!ENTITY nch.prefs.showininfowindow "在資訊視窗顯示">
-<!ENTITY nch.prefs.showinfocolumn "在資訊視窗顯示資訊欄">
 <!ENTITY nch.prefs.blinking "閃爍">
 <!ENTITY nch.prefs.off "關">
 <!ENTITY nch.prefs.onstatusupdateifnewproblemappears "當狀態更新及新問題出現時使用">
@@ -93,7 +98,6 @@
 <!ENTITY nch.prefs.unreachable "未能連接">
 <!ENTITY nch.prefs.replay "重播">
 <!ENTITY nch.prefs.getaliases "下載的主機別稱">
-<!ENTITY nch.prefs.showaliascolumn "在資訊視窗顯示主機別稱列(適用於已指定使用至少一個Nagios伺服器的下載主機的別稱)">
 <!ENTITY nch.prefs.shortwithservername "只顯示伺服器名稱">
 <!ENTITY nch.prefs.numbersonlywithservername "數字只顯示於有伺服器名稱">
 <!ENTITY nch.prefs.totalnumbers "包含總數">
@@ -110,7 +114,37 @@
 <!ENTITY nch.prefs.makedonation "貢獻給作者">
 <!ENTITY nch.prefs.hostsmatchingregexp "主機符合指定運算式">
 <!ENTITY nch.prefs.servicesmatchingregexp "服務符合指定運算式">
+<!ENTITY nch.prefs.infomatchingregexp "Information column matching regular expression">
+<!ENTITY nch.prefs.allflapping "全部移動的主機及服務">
 <!ENTITY nch.prefs.disable "停用">
 <!ENTITY nch.prefs.disabled "已停用">
 <!ENTITY nch.prefs.onaddons "於Mozilla 的附加元件頁">
 <!ENTITY nch.prefs.projecthome "主頁">
+<!ENTITY nch.prefs.moveup "向上">
+<!ENTITY nch.prefs.movedown "向下">
+<!ENTITY nch.prefs.reverseexp "相反表達式">
+<!ENTITY nch.prefs.showinfowindowcolumns "顯示資訊視窗的欄">
+<!ENTITY nch.prefs.aliascolumn "主機(別稱)">
+<!ENTITY nch.prefs.infocolumn "資訊">
+<!ENTITY nch.prefs.flagscolumn "旗幟">
+<!ENTITY nch.prefs.statuscolumn "狀態">
+<!ENTITY nch.prefs.attemptcolumn "嘗試次數">
+<!ENTITY nch.prefs.minimalservicesattempt "播放音樂的最少服務嘗試次數">
+<!ENTITY nch.prefs.advanced "進階">
+<!ENTITY nch.advanced.downloadtimeout "Status.cgi 下載逾時(秒)">
+<!ENTITY nch.advanced.prefertextconfig "選擇從文字檔案匯入設定，而不選擇Firefox內建設定">
+<!ENTITY nch.advanced.note_prefertextconfig "當Firefox不正常關閉或設定未存檔時很有用；設定檔只會在第一次開啟Firefox視窗時才載入。">
+<!ENTITY nch.prefs.working_days "工作日">
+<!ENTITY nch.prefs.monday_short "一">
+<!ENTITY nch.prefs.tuesday_short "二">
+<!ENTITY nch.prefs.wednesday_short "三">
+<!ENTITY nch.prefs.thursday_short "四">
+<!ENTITY nch.prefs.friday_short "五">
+<!ENTITY nch.prefs.saturday_short "六">
+<!ENTITY nch.prefs.sunday_short "日">
+<!ENTITY nch.about.license "License">
+<!ENTITY nch.prefs.nagiossystems "Nagios Systems">
+<!ENTITY nch.prefs.detaillevel "Detail Level">
+<!ENTITY nch.prefs.windowtype "Window Type">
+<!ENTITY nch.prefs.statusbar "StatusBar">
+<!ENTITY nch.prefs.infowindow "Information Window">

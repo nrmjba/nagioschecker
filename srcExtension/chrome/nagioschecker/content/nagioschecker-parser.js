@@ -1,88 +1,8 @@
-/* parseUri JS v0.1, by Steven Levithan (http://badassery.blogspot.com)
- * Splits any well-formed URI into the following parts (all are optional):
- * ----------------------
- * source (since the exec() method returns backreference 0 [i.e., the entire match] as key 0, we might as well use it)
- * protocol (scheme)
- * authority (includes both the domain and port)
- * domain (part of the authority; can be an IP address)
- * port (part of the authority)
- * path (includes both the directory path and filename)
- * directoryPath (part of the path; supports directories with periods, and without a trailing backslash)
- * fileName (part of the path)
- * query (does not include the leading question mark)
- * anchor (fragment)
- */
-function parseUri(sourceUri){
-    var uriPartNames = ["source","protocol","authority","domain","port","path","directoryPath","fileName","query","anchor"];
-    var uriParts = new RegExp("^(?:([^:/?#.]+):)?(?://)?(([^:/?#]*)(?::(\\d*))?)?((/(?:[^?#](?![^?#/]*\\.[^?#/.]+(?:[\\?#]|$)))*/?)?([^?#/]*))?(?:\\?([^#]*))?(?:#(.*))?").exec(sourceUri);
-    var uri = {};
-    
-    for(var i = 0; i < 10; i++){
-        uri[uriPartNames[i]] = (uriParts[i] ? uriParts[i] : "");
-    }
-    
-    // Always end directoryPath with a trailing backslash if a path was present in the source URI
-    // Note that a trailing backslash is NOT automatically inserted within or appended to the "path" key
-    if(uri.directoryPath.length > 0){
-        uri.directoryPath = uri.directoryPath.replace(/\/?$/, "/");
-    }
-    
-    return uri;
-}
-
-function getUglyNodeValue(node,ids) {
-  var tmp = node;
-  for (var i=0;i<ids.length;i++) {
-    try {
-      tmp=tmp.childNodes[ids[i]];
-    }
-    catch (e) {
-      return false;
-    }
-  }
-  return tmp.nodeValue;
-}
-
-function getUglyNode(node,ids) {
-  var tmp = node;
-  for (var i=0;i<ids.length;i++) {
-    try {
-      tmp=tmp.childNodes[ids[i]];
-    }
-    catch (e) {
-      return false;
-    }
-  }
-  return tmp;
-}
-
-/*
- *
- * http://www.dustindiaz.com/getelementsbyclass/
- *
- */
-function getElementsByClass(searchClass,node,tag) {
-	var classElements = new Array();
-	if ( node == null )
-		node = document;
-	if ( tag == null )
-		tag = '*';
-	var els = node.getElementsByTagName(tag);
-	var elsLen = els.length;
-	var pattern = new RegExp("(^|\\s)"+searchClass+"(\\s|$)");
-	for (var i = 0, j = 0; i < elsLen; i++) {
-		if ( pattern.test(els[i].className) ) {
-			classElements[j] = els[i];
-			j++;
-		}
-	}
-	return classElements;
-}
-
 function NCHParser() {};
 
 NCHParser.prototype = {
   _servers:[],
+  callback:null,
   problems: [],
   manager:null,
   timeout:30,
@@ -95,43 +15,67 @@ NCHParser.prototype = {
   setTimeout: function (t) {
     this.timeout=t;
   },
-  fetchAllData: function(manager) {
+  fetchAllData: function(manager,callback) {
     if (this._servers.length>0) {
+  		this.callback=callback;
   	 this.manager=manager;
     this.problems = [];
     this.fetchServer(0);
     }
   },
 
+  loginToOpsview: function(pos) {
+    var login_auth = new XMLHttpRequest();
+    var login_url = this._servers[pos].url + '/login' + 
+                    '?login_username=' + this._servers[pos].username + 
+                    '&login_password=' + this._servers[pos].password
+
+    login_auth.open("POST", login_url, false);
+    login_auth.send(null);
+
+    this._servers[pos]._ssoLoggedIn = 1;
+  },
+
   fetchServer: function(pos) {
 	this.problems[pos]={"down":[],"unreachable":[],"unknown":[],"warning":[],"critical":[],"_error":false,"_time":null};
 	this.missingAliases[pos]=[];			
 	if (!this._servers[pos].disabled) {
-		var urlServices = (this._servers[pos].versionOlderThan20) ? this._servers[pos].urlstatus+"?host=all&servicestatustypes=248" : this._servers[pos].urlstatus+"?host=all&servicestatustypes=28";
-		var urlHosts = this._servers[pos].urlstatus+"?hostgroup=all&style=hostdetail&hoststatustypes=12";
-		var urlExt = this._servers[pos].urlstatus.replace(/status\.cgi/,"extinfo.cgi");
-		var user = this._servers[pos].username;
-		var pass = this._servers[pos].password;
+
+		var urlServices = createNagiosUrl(this._servers[pos],'service_problems');
+		
+
+		if (this._servers[pos].serverType == 1){
+			if (this._servers[pos]._ssoLoggedIn != 1){
+				this.loginToOpsview(pos);
+			}
+		}
+		
+		var urlHosts = createNagiosUrl(this._servers[pos],'host_problems');
+		
+		
+        var server = this._servers[pos];
 		var me = this;
-		this.loadDataAsync(urlHosts,user,pass,false,function (doc1) {
+		
+		this.loadDataAsync(urlHosts,server,false,function (doc1) {
+			
 			me.parseNagiosHostsHtml(pos,doc1);
-            me.loadDataAsync(urlServices,user,pass,false,function (doc2) {
+            me.loadDataAsync(urlServices,server,false,function (doc2) {
             	me.parseNagiosServicesHtml(pos,doc2);
-				me.loadMissingAlias(0,pos,user,pass,function () {
+				me.loadMissingAlias(0,pos,server,function () {
 					me.problems[pos]["_time"]=new Date();
 					if (me._servers.length==pos+1) {
-						me.manager.handleProblems(me.problems);
+						me.callback(me.problems);
 					}
 					else {
 						me.fetchServer(pos+1);
 					}
 				});   			
-            });        
-		});
+            },true);        
+		},true);
      }
      else {
 		if (this._servers.length==pos+1) {
-			this.manager.handleProblems(this.problems);
+			this.callback(this.problems);
 		}
 		else {
 			this.fetchServer(pos+1);
@@ -139,28 +83,32 @@ NCHParser.prototype = {
      }
   },
 
-  loadMissingAlias: function(apos,pos,username,password,callback) {
+  loadMissingAlias: function(apos,pos,server,callback) {
 	if (this.missingAliases[pos][apos]) {
-		var extinfo = this._servers[pos].urlstatus.replace(/status\.cgi/,"extinfo.cgi");
-		var urlExt = extinfo+"?type=1&host="+this.missingAliases[pos][apos];
+		var urlExt = createNagiosUrl(this._servers[pos],'detail',this.missingAliases[pos][apos])
+		
 		var me=this;
-		this.loadDataAsync(urlExt,username,password,false,function (doc2) {
+		this.loadDataAsync(urlExt,server,false,function (doc2) {
 				me.parseAlias(pos,me.missingAliases[pos][apos],doc2);
 				me.manager._servers[pos][me.missingAliases[pos][apos]]=me.missingAliases[pos][apos];
-				me.loadMissingAlias(apos+1,pos,username,password,callback);				
-			});
+				me.loadMissingAlias(apos+1,pos,server,callback);				
+			},false);
 	}
 	else {
 		callback();
 	}
   },
 
-  loadDataAsync: function(url,username,password,rettext,callback) {
+  loadDataAsync: function(url,server,rettext,callback,remove_nl) {
     var doc=null;
     if (url) {
 	    var request=new XMLHttpRequest();
 
-   	  request.open("GET",url,true,username,password);
+      if (server.serverType == 1) {
+   		request.open("GET",url,true);
+      } else {
+      	request.open("GET",url,true,server.username,server.password);
+      }
       var requestTimer = setTimeout(function() {
                                       request.abort();
                                     }, this.timeout*1000); //pulminuty
@@ -179,7 +127,8 @@ NCHParser.prototype = {
           callback(null);
           return;
         }
-            var result=request.responseText;
+        		
+            var result=(remove_nl) ? request.responseText.replace(/[\n\r\t]/g,'') : request.responseText;
             var doc = null;
             if (rettext) {
               doc=result;
@@ -187,12 +136,24 @@ NCHParser.prototype = {
             else {
   		        if (result != null) {
 			          var iframe=document.createElement('iframe');
-			          iframe.style.visibility='hidden';
-			          iframe.style.width="0";
-			          iframe.style.height="0";
-			          document.documentElement.appendChild(iframe);
+
+			          iframe.style.display = "inline";
+			          iframe.style.visibility = "hidden";
+				      iframe.style.position = "absolute";
+      		          iframe.style.width='0px';
+      		          iframe.style.top='0px';
+      		          iframe.style.left='0px';
+			          iframe.style.height='0px';
+			          iframe.style.border='0px';
+			          iframe.style.margin='0 0 0 0';
+			          iframe.style.frameBorder=0;
+			          iframe.style.padding='0px';
+			          
+			          var d = document.getElementById('nagioschecker-panel');
+			          
+			          d.appendChild(iframe);
 			          doc=iframe.contentDocument;
-   		          document.documentElement.removeChild(iframe);
+			          d.removeChild(iframe);
 			          doc.documentElement.innerHTML=result;
 				      }
             } 
@@ -205,41 +166,41 @@ NCHParser.prototype = {
 
 
 
-  downloadStatus: function(url,username,password,callback) {
+  downloadStatus: function(url,server,callback) {
 
 	var mainUri = parseUri(url);
 	if (mainUri.path=="") {
 		url+="/";
 	}
     var me = this;
-    this.loadDataAsync(url,username,password,true,function (doc1) {
+    this.loadDataAsync(url,server,true,function (doc1) {
 		var nuvola = me.parseNuvolaJs(doc1,url);
 		if (nuvola!="") {
-	    	me.loadDataAsync(nuvola,username,password,true,function(par) {
+	    	me.loadDataAsync(nuvola,server,true,function(par) {
 			var urlst = me.parseNuvolaJsStatus(par,url);
 						callback(urlst);
-					});
+					},false);
 		}
 		else {
 
 			var side = me.parseFrame(doc1,url);
 			if (side!="") {
-		    	me.loadDataAsync(side,username,password,true,function(par) {
+		    	me.loadDataAsync(side,server,true,function(par) {
 					var urlst = me.parseSide(par,url,side);
 						callback(urlst);
-					});
+					},false);
 			}
 			else {
 		      callback("");
 			}
 		}
-    	});
+    	},false);
   },
 
   nagiosDateToTimestamp: function(ndate) {
     var token = new RegExp('(\d{1,2})\-(\d{1,2})\-(\d{4})\s(\d{1,2}):(\d{1,2}):(\d{1,2})', 'g').exec(ndate);
     var date = new Date();
-	  if (token) {
+    if (token) {
       date.setFullYear(token[3]);
       date.setDate(token[1]);
       date.setMonth(token[2]);
@@ -247,44 +208,35 @@ NCHParser.prototype = {
       date.setMinutes(token[5]);
       date.setSeconds(token[6]);
       return date.getMiliseconds();
-	  }
+    }
     return ndate;
   },
 
   nagiosDurationToDuration: function(ndur) {
-    var pattern = /(\s*)([0-9]*)d(\s*)([0-9]*)h(\s*)([0-9]*)m(\s*)([0-9]*)s/g;
-    var token = ndur.split(pattern);
-    var str = "";
-	  if (token) {
+	if (!ndur) return ''; 
+  
+    var token = ndur.split(/(\s*)([0-9]*)d(\s*)([0-9]*)h(\s*)([0-9]*)m(\s*)([0-9]*)s/g);
+    if (token) {
       var days = token[2];
       var hours = token[4];
       var minutes = token[6];
       var seconds = token[8];
-      var str="";
-      if (days>0) str+=days+"d";
-      if (hours>0) {
-        if (str!="") str+=" ";
-        str+=hours+"h";
-      }
-      if (minutes>0) {
-        if (str!="") str+=" ";
-        str+=minutes+"m";
-      }
-      if (seconds>0) {
-        if (str!="") str+=" ";
-        str+=seconds+"s";
-      }
+      var str='';
+      if (days>0) str+=days+'d';
+      if (hours>0) str+=((str!='') ? ' ' : '')+hours+'h';
+      if (minutes>0) str+=((str!='') ? ' ' : '')+minutes+'m';
+      if (seconds>0) str+=((str!='') ? ' ' : '')+seconds+'s';
       return str;  
-	  }
+    }
+
     return ndur;
   },
+  
   nagiosDurationToSeconds: function(ndur) {
-    var pattern = /(\s*)([0-9]*)d(\s*)([0-9]*)h(\s*)([0-9]*)m(\s*)([0-9]*)s/g;
-    var token = ndur.split(pattern);
+	if (!ndur) return 0;  
+    var token = ndur.split(/(\s*)([0-9]*)d(\s*)([0-9]*)h(\s*)([0-9]*)m(\s*)([0-9]*)s/g);
     var sec = 0;
-		if (token) {
-		sec=parseInt(token[2])*86400 + parseInt(token[4])*3600 + parseInt(token[6])*60 + parseInt(token[8]);
-	  }
+    if (token) sec=parseInt(token[2])*86400 + parseInt(token[4])*3600 + parseInt(token[6])*60 + parseInt(token[8]);
     return sec;
   },
 
@@ -407,27 +359,54 @@ NCHParser.prototype = {
 
   parseNagiosServicesHtml: function(pos,doc) {
     if (doc!=null) {
+      var procstat = getElementsByClass("infoBoxBadProcStatus",doc,"div");
+      var disnotifs_global=((procstat[0]) && (procstat[0].childNodes[0]) && (procstat[0].childNodes[0].nodeValue) && (procstat[0].childNodes[0].nodeValue.match("Notifications are disabled"))) ? true : false;
+//dump ("DISNOT_G:"+disnotifs_global+"\n");
       var ar = getElementsByClass("status",doc,"table");
       if (ar[0]) {
-      var viptr = ar[0].childNodes[1].childNodes;
+      var viptr = (ar[0].childNodes[1]) ? ar[0].childNodes[1].childNodes : ar[0].childNodes[0].childNodes;
       var lastHost="";
-      for (var i = 2; i < viptr.length; i+=2) {
+      var lastHostDowntime="";
+      for (var i = 1; i < viptr.length; i+=1) {
         if (viptr[i] instanceof HTMLTableRowElement) {
           var viptd = viptr[i].childNodes;
           if (viptd.length>1) {                
-            var host    = getUglyNodeValue(viptd[1],[0,1,0,1,1,1,0,1,0,0]);
+            var host_downtime=false;
+            var host    = getUglyNodeValue(viptd[0],[0,0,0,0,0,0,0,0,0,0]);
+            var icons    = getUglyNode(viptd[0],[0,0,0,1,0,0,0]);
+				try {
+			  for(var j=0;j<icons.childNodes.length;j++) {
+              if (icons.childNodes[j] instanceof HTMLTableCellElement) {
+                var ico = getUglyNode(icons.childNodes[j],[0,0]);
+                if (ico) {
+                  var tit = ico.getAttribute("alt");
+                  if (tit) {
+                    if (tit.match("scheduled downtime")) {
+                      host_downtime=true;
+                    }
+                  }
+                }
+              }
+			  }
+				}
+				catch (e) {}
+
+            if ((!host) && (lastHostDowntime)) {
+				host_downtime=true;
+            }
             if (!host) host=lastHost;
 
-
-
-            var service = getUglyNodeValue(viptd[3],[0,0,0,0,0,1,0,1,0,0]);
+            var service = getUglyNodeValue(viptd[1],[0,0,0,0,0,0,0,0,0,0]);
 
             var acknowledged=false;
             var dischecks=false;
-            var disnotifs=false;
+            var onlypass=false;
+            var disnotifs=disnotifs_global;
             var downtime=false;
+            var flapping=false;
 
-            var icons    = getUglyNode(viptd[3],[0,0,0,2,1,1,0]);
+            var icons    = getUglyNode(viptd[1],[0,0,0,1,0,0,0]);
+			if (icons.childNodes) {
             for(var j=0;j<icons.childNodes.length;j++) {
               if (icons.childNodes[j] instanceof HTMLTableCellElement) {
                 var ico = getUglyNode(icons.childNodes[j],[0,0]);
@@ -440,38 +419,50 @@ NCHParser.prototype = {
                     if (tit.match("hecks") && tit.match("have been disabled") && !tit.match("only passive")) {
                       dischecks=true;
                     }
+                    if (tit.match("hecks") && tit.match("have been disabled") && tit.match("only passive")) {
+                      onlypass=true;
+                    }
                     if (tit.match("otification") && tit.match("have been disabled")) {
                       disnotifs=true;
                     }
                     if (tit.match("scheduled downtime")) {
                       downtime=true;
+                      lastHostDowntime=host_downtime; 
+                    }
+                    if (tit.match("flapping")) {
+                      flapping=true;
                     }
                   }
                 }
               }
             }
+			}
 
-
-            var status  = getUglyNodeValue(viptd[5],[0]);
-            var lastCheck  = this.nagiosDateToTimestamp(getUglyNodeValue(viptd[7],[0]));
-				    var tmp_dur = getUglyNodeValue(viptd[9],[0]);
+            var status  = getUglyNodeValue(viptd[2],[0]);
+            var lastCheck  = this.nagiosDateToTimestamp(getUglyNodeValue(viptd[3],[0]));
+		    var tmp_dur = getUglyNodeValue(viptd[4],[0]);
             var duration  = this.nagiosDurationToDuration(tmp_dur);
             var durationSec  = this.nagiosDurationToSeconds(tmp_dur);
-            var attempt  = getUglyNodeValue(viptd[11],[0]);
-            var info  = getUglyNodeValue(viptd[13],[0]);
+            var attempt  = getUglyNodeValue(viptd[5],[0]);
+            var info  = getUglyNodeValue(viptd[6],[0]);
+
 
             var isSoft = false;
             var sto = new RegExp('([0-9]+)\/([0-9]+)','mig').exec(attempt);
             if ((sto) && (parseInt(sto[1])<parseInt(sto[2]))) {
               isSoft=true;
             }         
-				    if ((status=="UNKNOWN") || (status=="WARNING") || (status=="CRITICAL")) {
-              var tmpo ={"type":"s","host": host,"service":service,"status":this.toLower[status],"lastCheck":lastCheck,"durationSec":durationSec,"duration":duration,"attempt":attempt,"info":info,"acknowledged":acknowledged,"dischecks":dischecks,"disnotifs":disnotifs,"isSoft":isSoft,"downtime":downtime};
+			var attemptInt = (sto) ? parseInt(sto[1]) : 0;
+			if (host_downtime) {
+				downtime=true;
+			}
+            if ((status=="UNKNOWN") || (status=="WARNING") || (status=="CRITICAL")) {
+              var tmpo ={"type":"s","host": host,"service":service,"status":this.toLower[status],"lastCheck":lastCheck,"durationSec":durationSec,"duration":duration,"attempt":attempt,"attemptInt":attemptInt,"info":info,"acknowledged":acknowledged,"dischecks":dischecks,"disnotifs":disnotifs,"isSoft":isSoft,"downtime":downtime,"flapping":flapping,"onlypass":onlypass};
 	            this.problems[pos][this.toLower[status]].push(tmpo);
   					  if ((this.manager._servers[pos].getAliases) && (!this.manager._servers[pos].aliases[host])) {
 						    this.missingAliases[pos].push(host);
 					    }
-				    }
+				}
             lastHost=host;
           }
         }
@@ -494,23 +485,26 @@ NCHParser.prototype = {
 
   parseNagiosHostsHtml: function(pos,doc) {
     if (doc!=null) {
+      var procstat = getElementsByClass("infoBoxBadProcStatus",doc,"div");
+      var disnotifs_global=((procstat[0]) && (procstat[0].childNodes[0]) && (procstat[0].childNodes[0].nodeValue) && (procstat[0].childNodes[0].nodeValue.match("Notifications are disabled"))) ? true : false;     	
       var ar = getElementsByClass("status",doc,"table");
       if (ar[0]) {
-      var viptr = ar[0].childNodes[1].childNodes;
+      var viptr = (ar[0].childNodes[1]) ? ar[0].childNodes[1].childNodes : ar[0].childNodes[0].childNodes;
       var lastHost="";
-      for (var i = 2; i < viptr.length; i+=2) {
+      for (var i = 1; i < viptr.length; i+=1) {
         if (viptr[i] instanceof HTMLTableRowElement) {
           var viptd = viptr[i].childNodes;
           if (viptd.length>1) {                
-            var host    = getUglyNodeValue(viptd[1],[0,1,0,1,1,1,0,1,0,0]);
+            var host    = getUglyNodeValue(viptd[0],[0,0,0,0,0,0,0,0,0,0]);
             if (!host) host=lastHost;
-
             var acknowledged=false;
             var dischecks=false;
-            var disnotifs=false;
+            var disnotifs=disnotifs_global;
             var downtime=false;
+            var flapping=false;
 
-            var icons    = getUglyNode(viptd[1],[0,1,0,3,1,1,0]);
+            var icons    = getUglyNode(viptd[0],[0,0,0,1,0,0,0]);
+			if (icons.childNodes) {
             for(var j=0;j<icons.childNodes.length;j++) {
               if (icons.childNodes[j] instanceof HTMLTableCellElement) {
                 var ico = getUglyNode(icons.childNodes[j],[0,0]);
@@ -530,19 +524,23 @@ NCHParser.prototype = {
                     if (tit.match("scheduled downtime")) {
                       downtime=true;
                     }
+                    if (tit.match("flapping")) {
+                      flapping=true;
+                    }
                   }
                 }
               }
             }
+			}
 
-            var status  = getUglyNodeValue(viptd[3],[0]);
-            var lastCheck  = this.nagiosDateToTimestamp(getUglyNodeValue(viptd[5],[0]));
-    				var tmp_dur = getUglyNodeValue(viptd[7],[0]);
+            var status  = getUglyNodeValue(viptd[1],[0]);
+            var lastCheck  = this.nagiosDateToTimestamp(getUglyNodeValue(viptd[2],[0]));
+			var tmp_dur = getUglyNodeValue(viptd[3],[0]);
             var duration  = this.nagiosDurationToDuration(tmp_dur);
             var durationSec  = this.nagiosDurationToSeconds(tmp_dur);
-            var info  = getUglyNodeValue(viptd[9],[0]);
+            var info  = getUglyNodeValue(viptd[4],[0]);
 				    if ((status=="DOWN") || (status=="UNREACHABLE")) {
-            	this.problems[pos][this.toLower[status]].push({"type":"h","host": host,"service":null,"status":this.toLower[status],"lastCheck":lastCheck,"durationSec":durationSec,"duration":duration,"attempt":null,"info":info,"acknowledged":acknowledged,"dischecks":dischecks,"disnotifs":disnotifs,"isSoft":false,"downtime":downtime});
+            	this.problems[pos][this.toLower[status]].push({"type":"h","host": host,"service":null,"status":this.toLower[status],"lastCheck":lastCheck,"durationSec":durationSec,"duration":duration,"attempt":'1/1',"attemptInt":1,"info":info,"acknowledged":acknowledged,"dischecks":dischecks,"disnotifs":disnotifs,"isSoft":false,"downtime":downtime,"flapping":flapping,"onlypass":false});
 					    if ((this.manager._servers[pos].getAliases) && (!this.manager._servers[pos].aliases[host])) {
 						    this.missingAliases[pos].push(host);
 					    }

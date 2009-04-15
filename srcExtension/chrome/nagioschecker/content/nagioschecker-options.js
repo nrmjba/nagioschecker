@@ -1,12 +1,22 @@
 var gNCHOptions = null;
+var MAX_SERVERS=200;
 
 var nchoptionsLoad = function() {
 
   gNCHOptions = new NCHOptions();
+  
+  if (window.arguments && window.arguments[0]) {
+	  gNCHOptions.showAbout(0);
+	  //gNCHOptions.setTab('settings_tb',window.arguments[0]);
+	  //gNCHOptions.setTab('about_tb',3);
+  }
+  
+  document.getElementById('nch_version').value=getExtensionVersion();
 
   gNCHOptions.loadPref();
   gNCHOptions.disableSoundCheckboxes();
   gNCHOptions.disableSoundRadios();
+  gNCHOptions.updateRECheckboxes();
 };
 
 var nchoptionsUnload = function() {
@@ -33,13 +43,14 @@ function GetTreeSelections(tree) {
 }
 
 
+
 function NCHOptions() {};
 
 NCHOptions.prototype = {
 
   _servers: [],
   _tree: null,
-  _origServerCount: 20,
+  _origServerCount: MAX_SERVERS,
   bundle:null,
 
   addServer: function(server) {
@@ -49,24 +60,46 @@ NCHOptions.prototype = {
     this._servers[pos]=server;
   },
 
+  setTab: function(id,pos) {
+	  document.getElementById(id).selectedIndex=pos;  
+  },
+  
+  showAbout: function(subtab) {
+	  gNCHOptions.setTab('settings_tb',6);
+	  gNCHOptions.setTab('about_tb',subtab);  
+  },
+  
   removeServer: function(pos) {
-    var tmp = [];
-    for(var i=0;i<this._servers.length;i++) {
-      if (i!=pos) {
-         tmp.push(this._servers[i]);
-      }  
-    }
-    this._servers=tmp;
+	  
+	if (confirmMessage('confirmation','reallyWantToDoThisAction')) {  
+//		var tmp = [];
+//		for(var i=0;i<this._servers.length;i++) {
+//			if (i!=pos) {
+//				tmp.push(this._servers[i]);
+//			}  
+//		}
+//		this._servers=tmp;
+	}
   },
 
+ 
+  
   hostSelected: function() {
     var selections = GetTreeSelections(this._tree);
-    document.getElementById("remove-button").disabled = (selections.length < 1);
-    document.getElementById("edit-button").disabled = (selections.length < 1);
-    document.getElementById("able-button").disabled = (selections.length < 1);
+
+    document.getElementById("remove-menuitem").disabled = (selections.length < 1);
+    document.getElementById("edit-menuitem").disabled = (selections.length < 1);
+    document.getElementById("able-menuitem").disabled = (selections.length < 1);
+
+    
+    //document.getElementById("remove-button").disabled = (selections.length < 1);
+    //document.getElementById("edit-button").disabled = (selections.length < 1);
+    //document.getElementById("able-button").disabled = (selections.length < 1);
 
     var i = selections[0];
-	document.getElementById("able-button").setAttribute("label",(this._servers[i].disabled) ? gNCHOptions.bundle.getString("enable") : gNCHOptions.bundle.getString("disable"));
+	//document.getElementById("able-button").setAttribute("label",(this._servers[i].disabled) ? gNCHOptions.bundle.getString("enable") : gNCHOptions.bundle.getString("disable"));
+
+	document.getElementById("able-menuitem").setAttribute("label",(this._servers[i].disabled) ? gNCHOptions.bundle.getString("enable") : gNCHOptions.bundle.getString("disable"));
 
 ///    alert(i+";"+this._servers.length);
 
@@ -108,7 +141,18 @@ NCHOptions.prototype = {
 
   },
 
-
+  updateRECheckboxes: function() {
+    var ch_h = (document.getElementById('nch-general-filter_out_regexp_hosts').checked);
+    document.getElementById('nch-general-filter_out_regexp_hosts_value').disabled = (!ch_h);
+    document.getElementById('nch-general-filter_out_regexp_hosts_reverse').disabled = (!ch_h);
+    var ch_s = (document.getElementById('nch-general-filter_out_regexp_services').checked);
+    document.getElementById('nch-general-filter_out_regexp_services_value').disabled = (!ch_s);
+    document.getElementById('nch-general-filter_out_regexp_services_reverse').disabled = (!ch_s);
+    var ch_s = (document.getElementById('nch-general-filter_out_regexp_info').checked);
+    document.getElementById('nch-general-filter_out_regexp_info_value').disabled = (!ch_s);
+    document.getElementById('nch-general-filter_out_regexp_info_reverse').disabled = (!ch_s);
+  	
+  },
   removeAllServers: function() {
     this._servers.length = 0;
 
@@ -143,7 +187,7 @@ NCHOptions.prototype = {
   		case "able":
 			this._servers[i].disabled=!this._servers[i].disabled;
 		    this._tree.treeBoxObject.invalidate();
-			document.getElementById("able-button").setAttribute("label",(this._servers[i].disabled) ? gNCHOptions.bundle.getString("enable") : gNCHOptions.bundle.getString("disable"));    
+			document.getElementById("able-menuitem").setAttribute("label",(this._servers[i].disabled) ? gNCHOptions.bundle.getString("enable") : gNCHOptions.bundle.getString("disable"));    
   			break;
   		case "up":
 		    if (i>0) {
@@ -185,6 +229,8 @@ NCHOptions.prototype = {
   },
 
   removeSelectedServer: function() {
+	  if (confirmMessage('confirmation','reallyWantToDoThisAction')) { 
+	  
     this._tree.treeBoxObject.view.selection.selectEventsSuppressed = true;
     var selections = GetTreeSelections(this._tree);
     for (var s=selections.length-1; s>= 0; s--) {
@@ -211,11 +257,13 @@ NCHOptions.prototype = {
 
     }
     else {
-      document.getElementById('remove-button').setAttribute("disabled", "true")
+      document.getElementById('remove-menuitem').setAttribute("disabled", "true")
 
     }
 
     this._tree.treeBoxObject.view.selection.selectEventsSuppressed = false;
+    
+	  }
   },
 
 
@@ -251,9 +299,8 @@ NCHOptions.prototype = {
     getColumnProperties: function(aColumn, aColumnElement, aProperty) {},
     getCellProperties: function(aRow, aCol,aProperty) {
     
-		if (gNCHOptions._servers[aRow].disabled){
-			var aserv=Components.classes["@mozilla.org/atom-service;1"].
-              getService(Components.interfaces.nsIAtomService);
+		if (gNCHOptions._servers[aRow].disabled) {
+			var aserv=Components.classes["@mozilla.org/atom-service;1"].getService(Components.interfaces.nsIAtomService);
 			aProperty.AppendElement(aserv.getAtom("disServer"));
 		}
     
@@ -301,8 +348,15 @@ NCHOptions.prototype = {
         "nch-general-filter_out_all_unknown",
         "nch-general-filter_out_regexp_hosts",
         "nch-general-filter_out_regexp_services",
+        "nch-general-filter_out_regexp_info",
+        "nch-general-filter_out_regexp_hosts_reverse",
+        "nch-general-filter_out_regexp_services_reverse",
+        "nch-general-filter_out_regexp_info_reverse",
         "nch-view-show_window_column_information",
         "nch-view-show_window_column_alias",
+        "nch-view-show_window_column_flags",
+        "nch-view-show_window_column_attempt",
+        "nch-view-show_window_column_status",
         "nch-general-one_window_only",
         "nch-general-filter_out_acknowledged",
         "nch-general-filter_out_disabled_notifications",
@@ -311,11 +365,20 @@ NCHOptions.prototype = {
         "nch-general-filter_out_downtime",
         "nch-general-filter_out_services_on_down_hosts",
         "nch-general-filter_out_services_on_acknowledged_hosts",
+        "nch-general-filter_out_flapping",
         "nch-behavior-sounds_by_type_down",
         "nch-behavior-sounds_by_type_unreachable",
         "nch-behavior-sounds_by_type_critical",
         "nch-behavior-sounds_by_type_warning",
-        "nch-behavior-sounds_by_type_unknown"
+        "nch-behavior-sounds_by_type_unknown",
+        "nch-general-workday_1",
+        "nch-general-workday_2",
+        "nch-general-workday_3",
+        "nch-general-workday_4",
+        "nch-general-workday_5",
+        "nch-general-workday_6",
+        "nch-general-workday_0",
+        "nch-advanced-prefer_text_config"
         ];
 	
   	for (var i = 0; i < checkboxes.length; ++i) {
@@ -331,16 +394,18 @@ NCHOptions.prototype = {
        "nch-behavior-oneclick",
        "nch-sounds-warning",
        "nch-sounds-critical",
-       "nch-sounds-down"
+       "nch-sounds-down",
+       "nch-sounds-play_sound_attempt"
        ];
     for (var i = 0; i < radios.length; ++i) {
   		var radiogroup = document.getElementById(radios[i]);
 		  prefs.setIntPref(radiogroup.getAttribute("prefstring"), radiogroup.selectedItem.value);
 		}		
-		var INTtextboxes = [
-			"nch-general-refresh",
-			"nch-advanced-timeout"
-			];
+		  var INTtextboxes = [
+		  	"nch-general-refresh",
+		  	"nch-general-refreshsec",
+		  	"nch-advanced-timeout"
+		  	];
   	for (var i = 0; i < INTtextboxes.length; ++i) {
 		  var textbox = document.getElementById(INTtextboxes[i]);
 		  prefs.setIntPref(textbox.getAttribute("prefstring"), textbox.value);
@@ -352,7 +417,8 @@ NCHOptions.prototype = {
        "nch-general-worktime-from",
        "nch-general-worktime-to",
         "nch-general-filter_out_regexp_hosts_value",
-        "nch-general-filter_out_regexp_services_value"
+        "nch-general-filter_out_regexp_services_value",
+        "nch-general-filter_out_regexp_info_value"
         ];
 	  for (var i = 0; i < STRtextboxes.length; ++i) {
   		var textbox = document.getElementById(STRtextboxes[i]);
@@ -369,6 +435,7 @@ NCHOptions.prototype = {
           prefs.setCharPref("extensions.nagioschecker."+(i+1)+".name",this._servers[j].name);
           prefs.setCharPref("extensions.nagioschecker."+(i+1)+".urlstatus",this._servers[j].urlstatus);
           prefs.setBoolPref("extensions.nagioschecker."+(i+1)+".vot20",this._servers[j].versionOlderThan20);
+          prefs.setIntPref("extensions.nagioschecker."+(i+1)+".servertype",this._servers[j].serverType);
           prefs.setBoolPref("extensions.nagioschecker."+(i+1)+".plainpass",this._servers[j].plainPass);
           prefs.setBoolPref("extensions.nagioschecker."+(i+1)+".getaliases",this._servers[j].getAliases);
           prefs.setCharPref("extensions.nagioschecker."+(i+1)+".username",(this._servers[j].plainPass) ? this._servers[j].username : "");
@@ -395,6 +462,8 @@ NCHOptions.prototype = {
     }
 
 
+/**************************/
+
     Components.classes["@mozilla.org/observer-service;1"]
          .getService(Components.interfaces.nsIObserverService)
          .notifyObservers(window, "nagioschecker:preferences-changed", null);
@@ -403,12 +472,14 @@ NCHOptions.prototype = {
     return true;
   },
 
+
+
   replaySoundFile: function(type,wav) {
+  	
       switch (document.getElementById('nch-sounds-'+type).selectedItem.value) {
         case "0":
           var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
           var soundUri = ioService.newURI("chrome://nagioschecker/content/"+wav, null, null);
-
           break;
         case "1":
           var fileName=document.getElementById('nch-sounds-'+type+'-custom-path').value;
@@ -416,8 +487,13 @@ NCHOptions.prototype = {
           var soundUri = ioService.newURI("file:///"+fileName, null, null);
           break;
       }
+    try {
       var sound = Components.classes["@mozilla.org/sound;1"].createInstance(Components.interfaces.nsISound);
       sound.play(soundUri);
+    }
+    catch(e) {
+    	alert(e);
+    }
 
   },
 
@@ -441,8 +517,15 @@ NCHOptions.prototype = {
         "nch-general-filter_out_all_unknown",
         "nch-general-filter_out_regexp_hosts",
         "nch-general-filter_out_regexp_services",
+        "nch-general-filter_out_regexp_info",
+        "nch-general-filter_out_regexp_hosts_reverse",
+        "nch-general-filter_out_regexp_services_reverse",
+        "nch-general-filter_out_regexp_info_reverse",
         "nch-view-show_window_column_information",
         "nch-view-show_window_column_alias",
+        "nch-view-show_window_column_flags",
+        "nch-view-show_window_column_attempt",
+        "nch-view-show_window_column_status",
         "nch-general-one_window_only",
         "nch-general-filter_out_acknowledged",
         "nch-general-filter_out_disabled_notifications",
@@ -451,11 +534,20 @@ NCHOptions.prototype = {
         "nch-general-filter_out_downtime",
         "nch-general-filter_out_services_on_down_hosts",
         "nch-general-filter_out_services_on_acknowledged_hosts",
+        "nch-general-filter_out_flapping",
         "nch-behavior-sounds_by_type_down",
         "nch-behavior-sounds_by_type_unreachable",
         "nch-behavior-sounds_by_type_critical",
         "nch-behavior-sounds_by_type_warning",
-        "nch-behavior-sounds_by_type_unknown"
+        "nch-behavior-sounds_by_type_unknown",
+        "nch-general-workday_1",
+        "nch-general-workday_2",
+        "nch-general-workday_3",
+        "nch-general-workday_4",
+        "nch-general-workday_5",
+        "nch-general-workday_6",
+        "nch-general-workday_0",
+        "nch-advanced-prefer_text_config"
         ];
 		  for (var i = 0; i < checkboxes.length; ++i) {
   			var checkbox = document.getElementById(checkboxes[i]);
@@ -469,17 +561,19 @@ NCHOptions.prototype = {
        "nch-behavior-oneclick",
        "nch-sounds-warning",
        "nch-sounds-critical",
-       "nch-sounds-down"
+       "nch-sounds-down",
+       "nch-sounds-play_sound_attempt"
         ];
 		  for (var i = 0; i < radios.length; ++i) {
   			var radiogroup = document.getElementById(radios[i]);
         var radioid = radios[i]+'-'+prefs.getIntPref(radiogroup.getAttribute("prefstring"));
 			  radiogroup.selectedItem=document.getElementById(radioid);
 		  }	
-		var INTtextboxes = [
-			"nch-general-refresh",
-			"nch-advanced-timeout"
-			];
+		  var INTtextboxes = [
+		  	"nch-general-refresh",
+		  	"nch-general-refreshsec",
+		  	"nch-advanced-timeout"
+		  	];
 		  for (var i = 0; i < INTtextboxes.length; ++i) {
   			var textbox = document.getElementById(INTtextboxes[i]);
 			  var prefstring = textbox.getAttribute("prefstring");
@@ -492,7 +586,8 @@ NCHOptions.prototype = {
        "nch-general-worktime-from",
        "nch-general-worktime-to",
         "nch-general-filter_out_regexp_hosts_value",
-        "nch-general-filter_out_regexp_services_value"
+        "nch-general-filter_out_regexp_services_value",
+        "nch-general-filter_out_regexp_info_value"
        ];
 		  for (var i = 0; i < STRtextboxes.length; ++i) {
   			var textbox = document.getElementById(STRtextboxes[i]);
@@ -506,7 +601,7 @@ NCHOptions.prototype = {
    
 
 
-      for(var i=0;i<20;i++) {
+      for(var i=0;i<MAX_SERVERS;i++) {
         try {
           var surl = prefs.getCharPref("extensions.nagioschecker."+(i+1)+".url");
         try {
@@ -514,6 +609,12 @@ NCHOptions.prototype = {
         }
         catch (e) {
           var vot20 = false;
+        }
+        try {
+          var servertype = prefs.getIntPref("extensions.nagioschecker."+(i+1)+".servertype");
+        }
+        catch (e) {
+          var servertype = 0;
         }
         try {
           var pPass = prefs.getBoolPref("extensions.nagioschecker."+(i+1)+".plainpass");
@@ -542,6 +643,7 @@ NCHOptions.prototype = {
                   name:prefs.getCharPref("extensions.nagioschecker."+(i+1)+".name"),
                   urlstatus:prefs.getCharPref("extensions.nagioschecker."+(i+1)+".urlstatus"),
                   versionOlderThan20:vot20,
+                  serverType:servertype,
                   plainPass:pPass,
                   getAliases:getAli,
                   disabled:getDis,
@@ -551,8 +653,6 @@ NCHOptions.prototype = {
         }
         }
         catch (e) {}
-
-
         }
         catch (e) {
           break;
@@ -566,5 +666,7 @@ NCHOptions.prototype = {
     return true;
 
   }
+
+
 
 }
