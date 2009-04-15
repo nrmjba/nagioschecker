@@ -1,0 +1,21 @@
+TODO
+
+UNTESTED: import Servers from config file
+
+BUG: popup menu in corner on linux
+BUG: sometimes wrong onmouseover
+
+TRY: not showpopup when firefox window does not have focus
+
+FIX: Force saving password with special chars
+
+Bigger things:
+NEW: Export/import config
+NEW: New filtering system (Regexps)
+
+My targets:
+NEW: Percentage od download
+Sound file for unreachable
+Filter by duration
+Filter by attempt ?
+Filtr na rozmezi duration
