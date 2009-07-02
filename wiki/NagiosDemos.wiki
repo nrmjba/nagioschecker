@@ -27,3 +27,9 @@
 *Start page:* [http://demo.nagiosadmin.de/nagios/]
 
 *Credentials:* nagiosadmin:nagiosadmin
+
+== Icinga ==
+
+*Start page:* [http://demo.icinga.org/icinga/]
+
+*Credentials:* guest:guest
