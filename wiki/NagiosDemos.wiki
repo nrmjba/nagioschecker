@@ -8,7 +8,7 @@
 
 == dtnet ==
 
-*Start page:* [http://www.dtnet.de/Demo/Nagios/nagios.html]
+*Start page:* [http://www.dtnet.de/nagios/]
 
 == diglinks ==
 
@@ -33,3 +33,23 @@
 *Start page:* [http://demo.icinga.org/icinga/]
 
 *Credentials:* guest:guest
+
+== Hexnet ==
+
+*Start page:* [http://www.hexnet.cz/nagios2/]
+
+*Credentials:* demo:demo
+
+== Network Tech Inc. ==
+
+*Start page:* [http://information.networktechinc.com/nagios/]
+
+*Credentials:* guest:nti
+
+== Opengear ==
+
+*Start page:* [http://opengear.dyndns.org/nagios/]
+
+*Credentials:* nagiosadmin:nagadmin
+
+
