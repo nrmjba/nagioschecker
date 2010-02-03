@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://nagioschecker/skin/nagioschecker.css" type="text/css"?> 
+<!DOCTYPE window SYSTEM "chrome://nagioschecker/locale/nagioschecker.dtd">
+
+<window
+    id="nagioschecker-window"
+    title="Nagios Checker"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script type="application/x-javascript" src="chrome://nagioschecker/content/nagioschecker.js" />
+    <script type="application/x-javascript">
+    window.addEventListener("load", cz.petrsimek.nagioscheckerWindowLoad, false);
+    window.addEventListener("unload", cz.petrsimek.nagioscheckerWindowUnload, false);
+  </script>
+<vbox id="nagioschecker-vbox">
+</vbox>
+</window>
