@@ -29,6 +29,8 @@
         <menuitem label="&nch.menu.options;..." oncommand="openDialog('chrome://nagioschecker/content/nagioschecker-options.xul','nagioschecker-options','centerscreen,dialog,chrome,dependent,resizable').focus();" />
   	    <menuseparator />
         <menuitem label="&nch.about;..." oncommand="openDialog('chrome://nagioschecker/content/nagioschecker-options.xul','nagioschecker-options','centerscreen,dialog,chrome,dependent,resizable',true).focus();" />
+        <menuseparator />
+        <menuitem label="Test tab" oncommand="cz.petrsimek.nagioschecker.testTab();" />
       </menupopup>
     <popup id="nagioschecker-popup" class="nagioschecker-popup">
 </popup>    

@@ -1,7 +1,7 @@
 if (!cz) var cz = {};
 if (!cz.petrsimek) cz.petrsimek={};
 
-cz.petrsimek.NCH_VERSION = "0.14.9";
+cz.petrsimek.NCH_VERSION = "0.16.0";
 cz.petrsimek.NCH_GUID = "{123b2220-59cb-11db-b0de-0800200c9a66}";
 cz.petrsimek.NCH_CONFIGFILE="nagioschecker.xml";
 
@@ -56,6 +56,13 @@ cz.petrsimek.nagioscheckerLoad = function() {
   cz.petrsimek.nagioschecker.start();
 };
 
+cz.petrsimek.nagioscheckerWindowLoad = function() {
+
+
+	cz.petrsimek.nagioschecker = new NCH();
+
+};
+
 cz.petrsimek.nagioscheckerUnload = function() {
 	
   if (nagioschecker != null) {
@@ -78,6 +85,11 @@ cz.petrsimek.nagioscheckerUnload = function() {
     }
   }
   cz.petrsimek.nagioschecker = null;
+}
+
+cz.petrsimek.nagioscheckerWindowUnload = function() {
+	
+	  cz.petrsimek.nagioschecker = null;
 }
 
 cz.petrsimek.nagioscheckerBlur = function() {
@@ -744,6 +756,16 @@ NCH.prototype = {
     return found;
   },
 
+  nchtab: null,
+  
+  testTab: function() {
+	  this.openTab('chrome://nagioschecker/content/nagioschecker-window.xul');
+	  //this.nchtab = window.getBrowser().selectedTab;
+	  this.nchtab = window.getBrowser().getBrowserForTab(window.getBrowser().selectedTab);
+	  
+	  //this.nchtab
+  },
+  
   openTab: function(url) {
       var foundTab = this.urlOpened(url);
       if (!foundTab) {
@@ -1659,9 +1681,11 @@ NCH.prototype = {
   
   } 
 
-
 }
 
+if (!cz.petrsimek.nagioschecker.awin) cz.petrsimek.nagioschecker.awin = {};
+
+cz.petrsimek.nagioschecker.awin
 
 function NCHToolTip(pref) {
   this._rows=null;
@@ -1797,9 +1821,17 @@ function NCHToolTip(pref) {
 			row.appendChild(lInfo);
     	}
 
-		this._tooltip.appendChild(this._vbox);
+		//this._tooltip.appendChild(this._vbox);
 
-
+		if (cz.petrsimek.nagioschecker.nchtab!=null) {
+			var tabvbox = cz.petrsimek.nagioschecker.nchtab.contentDocument.getElementById('nagioschecker-vbox'); 
+			
+			if (tabvbox.childElementCount==0) {
+			tabvbox.appendChild(this._vbox);
+			}
+		}
+		
+		
 	 for(var i = 0;i<this.headers.length;i++) {
     	if ((this.headers[i].problems.length) || (this.headers[i].error)) {
 			this.createHeader(i,this.headers[i].data,this.headers[i].time);  

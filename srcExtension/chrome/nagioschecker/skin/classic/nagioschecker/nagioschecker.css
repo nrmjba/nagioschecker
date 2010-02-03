@@ -1,5 +1,11 @@
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
+#nagioschecker-window {
+   -moz-appearance: tooltip;
+   font: message-box;
+}
+}
+
 checkbox.nch {
 	width: 350px;
 }
