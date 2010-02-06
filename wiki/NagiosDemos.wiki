@@ -29,7 +29,7 @@
 
 *Credentials:* guest:guest
 
-*Status script url: http://nagios.demo.netways.de/nagios/cgi-bin/status.cgi*
+*Status script url:* _http://nagios.demo.netways.de/nagios/cgi-bin/status.cgi_
 
 <wiki:comment>
 == dtnet ==
