@@ -41,7 +41,7 @@
 
 *Credentials:* guest:guest
 
-*Status script url: http://sysnetmon.diglinks.com/nagios/cgi-bin/status.cgi*
+*Status script url:* _http://sysnetmon.diglinks.com/nagios/cgi-bin/status.cgi_
 
 == Stic ==
 
@@ -49,7 +49,7 @@
 
 *Credentials:* stic:stic
 
-*Status script url: http://live.stic-online.de/nagios/stic/status.cgi*
+*Status script url:* _http://live.stic-online.de/nagios/stic/status.cgi_
 
 == NagiosAdmin ==
 
@@ -57,7 +57,7 @@
 
 *Credentials:* nagiosadmin:nagiosadmin
 
-*Status script url: http://demo.nagiosadmin.de/nagios/cgi-bin/status.cgi*
+*Status script url:* _http://demo.nagiosadmin.de/nagios/cgi-bin/status.cgi_
 
 == Icinga ==
 
@@ -65,7 +65,7 @@
 
 *Credentials:* guest:guest
 
-*Status script url: http://demo.icinga.org/icinga/cgi-bin/status.cgi*
+*Status script url:* _http://demo.icinga.org/icinga/cgi-bin/status.cgi_
 
 <wiki:comment>
 == Hexnet ==
@@ -79,7 +79,7 @@
 
 *Credentials:* guest:nti
 
-*Status script url: http://information.networktechinc.com/nagios/cgi-bin/status.cgi*
+*Status script url:* _http://information.networktechinc.com/nagios/cgi-bin/status.cgi_
 
 == Opengear ==
 
@@ -87,4 +87,4 @@
 
 *Credentials:* nagiosadmin:nagadmin
 
-*Status script url: http://opengear.dyndns.org/nagios/cgi-bin/status.cgi*
+*Status script url:* _http://opengear.dyndns.org/nagios/cgi-bin/status.cgi_
